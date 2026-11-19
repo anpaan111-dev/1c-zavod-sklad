@@ -1,2424 +1,1070 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>1С:ERP НЕФАЗ — Учет и выдача ТМЦ</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<style>
-body {
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-background-color: #EFECE4;
-color: #1F2428;
--webkit-tap-highlight-color: transparent;
-}
-@media print {
-.no-print { display: none !important; }
-body { background: #fff !important; }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>1С:ERP НЕФАЗ — Учет и выдача ТМЦ</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #EFECE4;
+      color: #1F2428;
+      padding-bottom: 72px;
+    }
+    header {
+      background: #232A32;
+      color: #fff;
+      border-bottom: 4px solid #EAB308;
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .badge {
+      background: #EAB308;
+      color: #1F2428;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+    .btn {
+      border: 1px solid #9CA3AF;
+      background: #fff;
+      color: #1F2428;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 7px 11px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-amber { background: #EAB308; border-color: #CA8A04; color: #1F2428; }
+    .btn-green { background: #15803D; border-color: #166534; color: #fff; }
+    .btn-blue { background: #1D4ED8; border-color: #1E40AF; color: #fff; }
+    .btn-dark { background: #374151; border-color: #4B5563; color: #fff; }
+    .btn-red { background: #DC2626; border-color: #B91C1C; color: #fff; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 12px; }
+    .card {
+      background: #F9F8F4;
+      border: 1px solid #C8C3B8;
+      border-radius: 3px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .title { font-size: 15px; font-weight: 800; margin: 0 0 4px 0; }
+    .sub { font-size: 12px; color: #57534E; margin: 0; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #A8A29E;
+      border-radius: 3px;
+      font-size: 13px;
+      background: #fff;
+      color: #1F2428;
+    }
+    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #44403C; margin-bottom: 4px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; }
+    th { background: #E5E1D6; text-align: left; padding: 8px; border-bottom: 1px solid #A8A29E; }
+    td { padding: 8px; border-bottom: 1px solid #E7E5E4; vertical-align: top; }
+    .table-wrap { overflow-x: auto; border: 1px solid #C8C3B8; border-radius: 3px; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #232A32;
+      border-top: 2px solid #EAB308;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      z-index: 40;
+    }
+    .nav-btn {
+      background: transparent;
+      border: none;
+      border-right: 1px solid #374151;
+      color: #E5E7EB;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 12px 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .nav-btn.active { background: #EAB308; color: #1F2428; }
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px; z-index: 60; overflow-y: auto;
+    }
+    .modal {
+      background: #F9F8F4; border: 2px solid #232A32; border-radius: 3px;
+      width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-head {
+      background: #232A32; color: #fff; padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-body { padding: 14px; }
+    .alert-red {
+      background: #FEE2E2; border: 2px solid #DC2626; color: #7F1D1D;
+      padding: 10px; border-radius: 3px; margin: 8px 0; font-size: 12px;
+    }
+    .pill {
+      display: inline-block; background: #E7E5E4; border: 1px solid #D6D3D1;
+      padding: 4px 8px; border-radius: 3px; font-size: 11px; margin: 2px; cursor: pointer;
+    }
+    .toast {
+      position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
+      background: #1F2428; color: #fff; border: 1px solid #EAB308;
+      padding: 8px 14px; border-radius: 3px; font-size: 12px; z-index: 80;
+    }
+  </style>
 </head>
 <body>
-<div id="root"></div>
-
-<script type="text/babel">
-const { useState, useEffect, useRef, useMemo } = React;
-
-const Icon = ({ name, className = "w-4 h-4" }) => {
-const ref = useRef(null);
-useEffect(() => {
-if (ref.current && window.lucide) {
-const iconName = name
-.split("-")
-.map((part, idx) => (idx === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
-.join("");
-const iconDef = window.lucide.icons[iconName] || window.lucide.icons[name];
-if (iconDef) {
-const svg = window.lucide.createElement(iconDef);
-svg.setAttribute("class", className);
-ref.current.innerHTML = "";
-ref.current.appendChild(svg);
-}
-}
-}, [name, className]);
-return <span ref={ref} className="inline-flex items-center justify-center align-middle" />;
-};
-
-const STORAGE_KEY = "nefaz_erp_climate_v3_html";
-
-// Генерация детерминированного штрихкода EAN-13
-const generateBarcode = (seedStr = "") => {
-let hash = 0;
-const source = seedStr || String(Date.now()) + Math.random();
-for (let i = 0; i < source.length; i++) {
-hash = (hash * 31 + source.charCodeAt(i)) % 1000000000000;
-}
-const base12 = String(460000000000 + (Math.abs(hash) % 9999999999)).slice(0, 12);
-let sum = 0;
-for (let i = 0; i < 12; i++) {
-const digit = parseInt(base12[i], 10);
-sum += i % 2 === 0 ? digit : digit * 3;
-}
-const checkDigit = (10 - (sum % 10)) % 10;
-return base12 + String(checkDigit);
-};
-
-// SVG Штрихкод
-const BarcodeSVG = ({ value, height = 36, showText = true }) => {
-const digits = String(value || "4607001234567").split("").map((d) => parseInt(d, 10) || 0);
-const bars = [];
-digits.forEach((d, idx) => {
-const w1 = (d % 3) + 1;
-const w2 = ((d + idx) % 2) + 1;
-bars.push({ w: w1, fill: true });
-bars.push({ w: w2, fill: false });
-bars.push({ w: 1, fill: true });
-bars.push({ w: 1, fill: false });
-});
-const totalWidth = bars.reduce((acc, b) => acc + b.w, 0) + 16;
-
-return (
-<div className="inline-flex flex-col items-center bg-white px-2 py-1 border border-stone-300 rounded-sm select-none">
-<svg
-viewBox={0 0 ${totalWidth} ${height}}
-className="w-full max-w-[160px] h-auto"
-role="img"
-aria-label={Штрихкод ${value}`}
->
-<rect x="0" y="0" width={totalWidth} height={height} fill="#FFFFFF" />
-{(() => {
-let x = 8;
-return bars.map((b, i) => {
-const rect = b.fill ? (
-<rect key={i} x={x} y={4} width={b.w} height={height - 8} fill="#111827" />
-) : null;
-x += b.w;
-return rect;
-});
-})()}
-</svg>
-{showText && (
-<span className="text-[10px] font-mono tracking-wider text-stone-800 mt-0.5">{value}</span>
-)}
-</div>
-);
-};
-
-// SVG QR-код
-const QRCodeSVG = ({ payload, size = 116 }) => {
-const text = String(payload || "NEFAZ");
-const grid = 21;
-const matrix = Array.from({ length: grid }, () => Array(grid).fill(false));
-
-const drawFinder = (r0, c0) => {
-for (let r = 0; r < 7; r++) {
-for (let c = 0; c < 7; c++) {
-const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
-const isCenter = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-if (r0 + r < grid && c0 + c < grid) {
-matrix[r0 + r][c0 + c] = isBorder || isCenter;
-}
-}
-}
-};
-
-drawFinder(0, 0);
-drawFinder(0, grid - 7);
-drawFinder(grid - 7, 0);
-
-let seed = 1337;
-for (let i = 0; i < text.length; i++) {
-seed = (seed * 16777619) ^ text.charCodeAt(i);
-}
-
-for (let r = 0; r < grid; r++) {
-for (let c = 0; c < grid; c++) {
-const inTopLeft = r < 8 && c < 8;
-const inTopRight = r < 8 && c >= grid - 8;
-const inBottomLeft = r >= grid - 8 && c < 8;
-if (inTopLeft || inTopRight || inBottomLeft) continue;
-seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-matrix[r][c] = (seed % 100) < 46;
-}
-}
-
-return (
-<div className="inline-flex flex-col items-center bg-white p-2 border border-stone-300 rounded-sm">
-<svg width={size} height={size} viewBox={0 0${grid + 2} latex
-{grid + 2}`} className="block"&gt; &lt;rect x="0" y="0" width={grid + 2} height={grid + 2} fill="#FFFFFF" /&gt; {matrix.map((row, r) =&gt; row.map((cell, c) =&gt; cell ? ( &lt;rect key={`
-
-{r}-${c}} x={c + 1} y={r + 1} width="1" height="1" fill="#111827" />
-) : null
-)
-)}
-</svg>
-<span className="text-[10px] font-mono text-stone-700 mt-1 max-w-[150px] truncate">{text}</span>
-</div>
-);
-};
-
-const INITIAL_ACCOUNTS = [
-{
-id: "acc-1",
-fio: "Смирнов Дмитрий Викторович",
-role: "Кладовщик",
-qrToken: "QR-USER-SMIRNOV-01",
-},
-{
-id: "acc-2",
-fio: "Галиев Марат Рамилевич",
-role: "Мастер смены",
-qrToken: "QR-USER-GALIEV-02",
-},
- ];
-
-const INITIAL_PEOPLE = [
-{ id: "p-1", fio: "Иванов Алексей Сергеевич", department: "Сборочный цех №2" },
-{ id: "p-2", fio: "Петров Максим Олегович", department: "Участок климата" },
-{ id: "p-3", fio: "Сидоров Андрей Николаевич", department: "Сборочный цех №1" },
-{ id: "p-4", fio: "Фаттахов Руслан Маратович", department: "Электромонтажный участок" },
- ];
-
-const INITIAL_MODELS = [
-{
-id: "NEFAZ-5299-40-57",
-name: "НЕФАЗ-5299-40-57 (КЖГ, городской)",
-qrCode: "QR-MODEL-NEFAZ-5299-40-57",
-bom: [
-{ id: "b1", name: "Компрессор климатической установки Bitzer", unit: "шт", applicability: 1, barcode: "4607001000014" },
-{ id: "b2", name: "Конденсатор крышный в сборе с вентиляторами", unit: "шт", applicability: 2, barcode: "4607001000021" },
-{ id: "b3", name: "Испаритель салонный передний", unit: "шт", applicability: 1, barcode: "4607001000038" },
-{ id: "b4", name: "Испаритель салонный задний", unit: "шт", applicability: 1, barcode: "4607001000045" },
-{ id: "b5", name: "Блок управления климат-контролем (ECU)", unit: "шт", applicability: 1, barcode: "4607001000052" },
-{ id: "b6", name: "Трубопровод фреоновый напорный (комплект)", unit: "компл", applicability: 1, barcode: "4607001000069" },
-{ id: "b7", name: "Отопитель салонный жидкостный Webasto", unit: "шт", applicability: 2, barcode: "4607001000076" },
- ],
-},
-{
-id: "NEFAZ-5299-30-57-EL",
-name: "НЕФАЗ-5299-30-57 Электробус",
-qrCode: "QR-MODEL-NEFAZ-5299-30-57-EL",
-bom: [
-{ id: "e1", name: "Электрический компрессор HVAC 600V", unit: "шт", applicability: 1, barcode: "4607002000013" },
-{ id: "e2", name: "Крышный климатический блок (тепловой насос)", unit: "шт", applicability: 2, barcode: "4607002000020" },
-{ id: "e3", name: "Контроллер климата и терморегуляции АКБ", unit: "шт", applicability: 1, barcode: "4607002000037" },
-{ id: "e4", name: "Датчик температуры и влажности салона CAN", unit: "шт", applicability: 4, barcode: "4607002000044" },
- ],
-},
-];
-
-const INITIAL_ISSUES = [
-{
-id: "iss-1",
-docNumber: "ВД-000101",
-dateTime: "2026-11-19 09:15",
-modelId: "NEFAZ-5299-40-57",
-bodyNumber: "XTY529900R0004812",
-recipient: "Иванов Алексей Сергеевич",
-issuer: "Смирнов Дмитрий Викторович",
-comment: "Сборочный цех №2, участок климатических систем",
-items: [
-{ itemId: "b1", name: "Компрессор климатической установки Bitzer", unit: "шт", qty: 1, serialNumber: "SN-BIT-88412" },
-{ itemId: "b2", name: "Конденсатор крышный в сборе с вентиляторами", unit: "шт", qty: 1, serialNumber: "" },
- ],
-},
-];
-
-function App() {
-const [state, setState] = useState(() => {
-try {
-const saved = localStorage.getItem(STORAGE_KEY);
-if (saved) {
-const parsed = JSON.parse(saved);
-if (parsed && Array.isArray(parsed.models) && Array.isArray(parsed.issues)) {
-return {
-accounts: Array.isArray(parsed.accounts) ? parsed.accounts : INITIAL_ACCOUNTS,
-activeAccountId: parsed.activeAccountId || INITIAL_ACCOUNTS[0].id,
-people: Array.isArray(parsed.people) ? parsed.people : INITIAL_PEOPLE,
-models: parsed.models,
-issues: parsed.issues,
-};
-}
-}
-} catch (e) {}
-return {
-accounts: INITIAL_ACCOUNTS,
-activeAccountId: INITIAL_ACCOUNTS[0].id,
-people: INITIAL_PEOPLE,
-models: INITIAL_MODELS,
-issues: INITIAL_ISSUES,
-};
-});
-
-useEffect(() => {
-try {
-localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-} catch (e) {}
-}, [state]);
-
-const activeAccount = useMemo(
-() => state.accounts.find((a) => a.id === state.activeAccountId) || state.accounts[0] || null,
-[state.accounts, state.activeAccountId]
-);
-
-// Вкладки без цифр: 'bom' | 'warehouse' | 'report'
-const [activeTab, setActiveTab] = useState("warehouse");
-const [selectedModelId, setSelectedModelId] = useState(state.models[0]?.id || "NEFAZ-5299-40-57");
-
-// Модалка аккаунтов / регистрации / входа по QR
-const [authModalOpen, setAuthModalOpen] = useState(false);
-const [authMode, setAuthMode] = useState("qr-login"); // 'qr-login' | 'register' | 'my-qr'
-const [regFio, setRegFio] = useState("");
-const [regRole, setRegRole] = useState("Кладовщик");
-const [qrLoginInput, setQrLoginInput] = useState("");
-
-// Модалка базы данных (Модели, Номенклатура, Люди)
-const [dbModalOpen, setDbModalOpen] = useState(false);
-const [dbTab, setDbTab] = useState("models"); // 'models' | 'items' | 'people'
-
-// Редактирование/добавление модели автобуса
-const [modelFormId, setModelFormId] = useState("");
-const [modelFormName, setModelFormName] = useState("");
-const [editingModelId, setEditingModelId] = useState(null);
-
-// Редактирование/добавление номенклатуры (без заводского кода)
-const [itemTargetModelId, setItemTargetModelId] = useState(state.models[0]?.id || "");
-const [editingItemId, setEditingItemId] = useState(null);
-const [itemForm, setItemForm] = useState({
-name: "",
-unit: "шт",
-applicability: 1,
-barcode: "",
-});
-
-// Редактирование/добавление человека из базы получателей
-const [editingPersonId, setEditingPersonId] = useState(null);
-const [personForm, setPersonForm] = useState({ fio: "", department: "" });
-
-// Загрузка состава в модель
-const [showImportModal, setShowImportModal] = useState(false);
-const [importText, setImportText] = useState(
-"Клапан ТРВ климатической установки | шт | 2 | 4607009000011\nФильтр-осушитель магистрали | шт | 1 | 4607009000028"
-);
-const [targetModelForImport, setTargetModelForImport] = useState(selectedModelId);
-const [replaceExistingBom, setReplaceExistingBom] = useState(false);
-
-// Превью QR-кода
-const [qrPreview, setQrPreview] = useState(null);
-
-// Поиск по журналу
-const [issueSearch, setIssueSearch] = useState("");
-
-// 3-шаговый мастер выдачи ТМЦ
-const [wizardOpen, setWizardOpen] = useState(false);
-const [wizardStep, setWizardStep] = useState(1);
-const [wizardModelId, setWizardModelId] = useState(state.models[0]?.id || "");
-const [wizardModelManual, setWizardModelManual] = useState("");
-const [wizardBodyNumber, setWizardBodyNumber] = useState("");
-const [wizardComment, setWizardComment] = useState("");
-
-// Шаг 2: подбор ТМЦ + необязательный серийный номер
-const [scanInput, setScanInput] = useState("");
-const [selectedBomId, setSelectedBomId] = useState("");
-const [serialNumberInput, setSerialNumberInput] = useState("");
-const [issueQty, setIssueQty] = useState(1);
-const [alreadyIssuedBanner, setAlreadyIssuedBanner] = useState(null);
-const [draftItems, setDraftItems] = useState([]);
-
-// Шаг 3: получатель
-const [recipientName, setRecipientName] = useState("");
-const [issuerName, setIssuerName] = useState(activeAccount?.fio || "Смирнов Дмитрий Викторович");
-
-useEffect(() => {
-if (activeAccount?.fio) {
-setIssuerName(activeAccount.fio);
-}
-}, [activeAccount]);
-
-// Камера сканера ('model-qr' | 'item-barcode' | 'account-qr')
-const [cameraMode, setCameraMode] = useState(null);
-const [cameraError, setCameraError] = useState("");
-const videoRef = useRef(null);
-const streamRef = useRef(null);
-
-// Отчет по выдаче
-const [reportModelId, setReportModelId] = useState(state.models[0]?.id || "");
-const [reportBodyNumber, setReportBodyNumber] = useState("");
-const [reportCodeFilter, setReportCodeFilter] = useState("");
-
-const [toast, setToast] = useState("");
-const showToast = (msg) => {
-setToast(msg);
-setTimeout(() => setToast(""), 3000);
-};
-
-const activeModel = useMemo(
-() => state.models.find((m) => m.id === selectedModelId) || state.models[0],
-[state.models, selectedModelId]
-);
-
-const knownBodies = useMemo(() => {
-const map = new Map();
-state.issues.forEach((iss) => {
-if (iss.bodyNumber) map.set(iss.bodyNumber, iss.modelId);
-});
-return Array.from(map.entries()).map(([bodyNumber, modelId]) => ({ bodyNumber, modelId }));
-}, [state.issues]);
-
-const getIssuedQtyForBody = (bodyNum, itemId, itemName) => {
-const cleanBody = (bodyNum || "").trim().toUpperCase();
-if (!cleanBody) return 0;
-let total = 0;
-state.issues.forEach((iss) => {
-if ((iss.bodyNumber || "").trim().toUpperCase() === cleanBody) {
-(iss.items || []).forEach((it) => {
-if ((itemId && it.itemId === itemId) || (itemName && it.name === itemName)) {
-total += Number(it.qty) || 0;
-}
-});
-}
-});
-draftItems.forEach((it) => {
-if ((itemId && it.itemId === itemId) || (itemName && it.name === itemName)) {
-total += Number(it.qty) || 0;
-}
-});
-return total;
-};
-
-const stopCamera = () => {
-if (streamRef.current) {
-streamRef.current.getTracks().forEach((t) => t.stop());
-streamRef.current = null;
-}
-setCameraMode(null);
-setCameraError("");
-};
-
-useEffect(() => {
-return () => stopCamera();
-}, []);
-
-const startCameraScanner = async (mode) => {
-stopCamera();
-setCameraMode(mode);
-setCameraError("");
-
-if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-setCameraError("Камера недоступна в этом браузере. Используйте ручной ввод или выбор из списка.");
-return;
-}
-
-try {
-const stream = await navigator.mediaDevices.getUserMedia({
-video: { facingMode: { ideal: "environment" } },
-audio: false,
-});
-streamRef.current = stream;
-if (videoRef.current) {
-videoRef.current.srcObject = stream;
-await videoRef.current.play();
-}
-
-if ("BarcodeDetector" in window) {
-const formats =
-mode === "model-qr" || mode === "account-qr"
-? ["qr_code"]
-: ["ean_13", "ean_8", "code_128", "code_39", "upc_a", "qr_code"];
-const detector = new window.BarcodeDetector({ formats });
-
-const scanLoop = async () => {
-if (!streamRef.current || !videoRef.current) return;
-try {
-if (videoRef.current.readyState === 4) {
-const codes = await detector.detect(videoRef.current);
-if (codes && codes.length > 0) {
-const rawValue = (codes[0].rawValue || "").trim();
-if (rawValue) {
-handleDetectedCode(mode, rawValue);
-return;
-}
-}
-}
-} catch (e) {}
-if (streamRef.current) {
-requestAnimationFrame(scanLoop);
-}
-};
-requestAnimationFrame(scanLoop);
-} else {
-setCameraError("Автораспознавание в этом браузере не поддерживается — введите значение вручную или выберите ниже.");
-}
-} catch (err) {
-setCameraError("Не удалось открыть камеру. Проверьте разрешение браузера или выберите/введите вручную.");
-}
-};
-
-const loginByQrToken = (rawToken) => {
-const clean = (rawToken || "").trim().toLowerCase();
-if (!clean) return false;
-const found = state.accounts.find(
-(acc) =>
-acc.qrToken.toLowerCase() === clean ||
-acc.fio.toLowerCase() === clean ||
-acc.id.toLowerCase() === clean
-);
-if (found) {
-setState((prev) => ({ ...prev, activeAccountId: found.id }));
-setAuthModalOpen(false);
-setQrLoginInput("");
-showToast(Вход выполнен:${found.fio}`);
-return true;
-}
-return false;
-};
-
-const handleDetectedCode = (mode, rawValue) => {
-stopCamera();
-if (mode === "account-qr") {
-if (!loginByQrToken(rawValue)) {
-setQrLoginInput(rawValue);
-showToast(Считан QR-код: ${rawValue}); } } else if (mode === "model-qr") { const foundModel = state.models.find( (m) =&gt; m.qrCode.toLowerCase() === rawValue.toLowerCase() || m.id.toLowerCase() === rawValue.toLowerCase() || rawValue.toLowerCase().includes(m.id.toLowerCase()) ); if (foundModel) { setWizardModelId(foundModel.id); setWizardModelManual(foundModel.name); showToast(Модель считана: ${foundModel.name});
-} else {
-setWizardModelManual(rawValue);
-showToast(Считан код модели: ${rawValue}`);
-}
-} else if (mode === "item-barcode") {
-handleItemLookup(rawValue);
-}
-};
-
-const handleRegisterAccount = (e) => {
-e.preventDefault();
-if (!regFio.trim()) {
-showToast("Введите ФИО для регистрации аккаунта");
-return;
-}
-const slug = regFio
-.trim()
-.toUpperCase()
-.replace(/[^A-ZА-Я0-9]+/g, "-")
-.slice(0, 16);
-const newAcc = {
-id: acc-${Date.now()}, fio: regFio.trim(), role: regRole.trim() || "Сотрудник", qrToken:QR-USER-latex
-{slug || Date.now()}`, }; setState((prev) =&gt; ({ ...prev, accounts: [...prev.accounts, newAcc], activeAccountId: newAcc.id, })); setRegFio(""); setAuthMode("my-qr"); showToast(`Аккаунт зарегистрирован: 
-
-{newAcc.fio}`);
-};
-
-const currentWizardModel = useMemo(
-() => state.models.find((m) => m.id === wizardModelId) || state.models[0],
-[state.models, wizardModelId]
-);
-
-const handleItemLookup = (queryValue) => {
-const q = (queryValue || "").trim().toLowerCase();
-if (!q || !currentWizardModel) return;
-
-const match = currentWizardModel.bom.find(
-(item) =>
-item.barcode.toLowerCase() === q ||
-item.name.toLowerCase().includes(q)
-);
-
-if (!match) {
-showToast("Номенклатура не найдена в составе выбранной модели");
-return;
-}
-
-setSelectedBomId(match.id);
-const alreadyIssued = getIssuedQtyForBody(wizardBodyNumber, match.id, match.name);
-const remaining = Math.max(0, match.applicability - alreadyIssued);
-
-if (alreadyIssued > 0) {
-setAlreadyIssuedBanner({
-name: match.name,
-issued: alreadyIssued,
-applicability: match.applicability,
-remaining,
-});
-} else {
-setAlreadyIssuedBanner(null);
-}
-
-setIssueQty(remaining > 0 ? Math.min(1, remaining) : 0);
-};
-
-const selectedBomObj = useMemo(() => {
-if (!currentWizardModel) return null;
-return currentWizardModel.bom.find((b) => b.id === selectedBomId) || null;
-}, [currentWizardModel, selectedBomId]);
-
-const remainingForSelected = useMemo(() => {
-if (!selectedBomObj) return 0;
-const issued = getIssuedQtyForBody(wizardBodyNumber, selectedBomObj.id, selectedBomObj.name);
-return Math.max(0, selectedBomObj.applicability - issued);
-}, [selectedBomObj, wizardBodyNumber, state.issues, draftItems]);
-
-const handleAddDraftItem = (e) => {
-e.preventDefault();
-if (!selectedBomObj) {
-showToast("Выберите или отсканируйте номенклатуру");
-return;
-}
-const qtyNum = Number(issueQty) || 0;
-if (qtyNum <= 0) {
-showToast("Укажите количество больше 0");
-return;
-}
-if (qtyNum > remainingForSelected) {
-showToast(Нельзя выдать больше остатка (${remainingForSelected} ${selectedBomObj.unit}));
-return;
-}
-
-setDraftItems((prev) => [
-...prev,
-{
-itemId: selectedBomObj.id,
-name: selectedBomObj.name,
-unit: selectedBomObj.unit,
-barcode: selectedBomObj.barcode,
-serialNumber: serialNumberInput.trim(),
-qty: qtyNum,
-},
- ]);
-
-setScanInput("");
-setSelectedBomId("");
-setSerialNumberInput("");
-setIssueQty(1);
-setAlreadyIssuedBanner(null);
-showToast("Позиция добавлена — можно сканировать следующую");
-};
-
-const handleFinishIssue = (e) => {
-e.preventDefault();
-if (!recipientName.trim()) {
-showToast("Укажите ФИО получателя");
-return;
-}
-if (draftItems.length === 0) {
-showToast("Добавьте хотя бы одну позицию ТМЦ");
-return;
-}
-
-const now = new Date();
-const pad = (n) => String(n).padStart(2, "0");
-const dateTimeStr = ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad( now.getHours() )}:${pad(now.getMinutes())}`;
-
-const nextNum = 101 + state.issues.length;
-const docNumber = ВД-${String(nextNum).padStart(6, "0")}`;
-
-const newIssue = {
-id: iss-${Date.now()}`,
-docNumber,
-dateTime: dateTimeStr,
-modelId: currentWizardModel?.id || wizardModelManual || "НЕФАЗ-5299",
-bodyNumber: wizardBodyNumber.trim().toUpperCase(),
-recipient: recipientName.trim(),
-issuer: issuerName.trim() || activeAccount?.fio || "Кладовщик",
-comment: wizardComment.trim() || "Выдача комплекта климатической системы",
-items: draftItems,
-};
-
-setState((prev) => ({
-...prev,
-issues: [newIssue, ...prev.issues],
-}));
-
-stopCamera();
-setWizardOpen(false);
-setDraftItems([]);
-setRecipientName("");
-setWizardComment("");
-setWizardStep(1);
-setReportModelId(newIssue.modelId);
-setReportBodyNumber(newIssue.bodyNumber);
-showToast(Проведен документ выдачи${docNumber}`);
-};
-
-const openWizard = () => {
-const defaultM = state.models.find((m) => m.id === selectedModelId) || state.models[0];
-setWizardStep(1);
-setWizardModelId(defaultM?.id || "");
-setWizardModelManual(defaultM?.name || "");
-setWizardBodyNumber("");
-setWizardComment("");
-setDraftItems([]);
-setScanInput("");
-setSelectedBomId("");
-setSerialNumberInput("");
-setAlreadyIssuedBanner(null);
-setRecipientName("");
-setWizardOpen(true);
-};
-
-// CRUD: Модели автобусов
-const handleSaveModel = (e) => {
-e.preventDefault();
-if (!modelFormName.trim()) {
-showToast("Введите наименование модели автобуса");
-return;
-}
-if (editingModelId) {
-setState((prev) => ({
-...prev,
-models: prev.models.map((m) =>
-m.id === editingModelId ? { ...m, name: modelFormName.trim() } : m
-),
-}));
-setEditingModelId(null);
-setModelFormId("");
-setModelFormName("");
-showToast("Модель автобуса обновлена");
-return;
-}
-const cleanId = (modelFormId.trim() || modelFormName.trim())
-.toUpperCase()
-.replace(/[^A-ZА-Я0-9-]+/g, "-")
-.slice(0, 28);
-const id = cleanId || MODEL-${Date.now()}; const created = { id, name: modelFormName.trim(), qrCode:QR-MODEL-${id},
-bom: [],
-};
-setState((prev) => ({ ...prev, models: [...prev.models, created] }));
-setSelectedModelId(id);
-setItemTargetModelId(id);
-setModelFormId("");
-setModelFormName("");
-showToast("Модель автобуса добавлена");
-};
-
-const handleDeleteModel = (id) => {
-if (state.models.length <= 1) {
-showToast("Должна остаться хотя бы одна модель автобуса");
-return;
-}
-setState((prev) => {
-const remaining = prev.models.filter((m) => m.id !== id);
-if (selectedModelId === id) setSelectedModelId(remaining[0]?.id || "");
-if (itemTargetModelId === id) setItemTargetModelId(remaining[0]?.id || "");
-return { ...prev, models: remaining };
-});
-showToast("Модель автобуса удалена");
-};
-
-// CRUD: Номенклатура (без заводского кода)
-const handleSaveBomItem = (e) => {
-e.preventDefault();
-const targetId = itemTargetModelId || activeModel?.id;
-if (!itemForm.name.trim()) {
-showToast("Введите наименование номенклатуры");
-return;
-}
-const appQty = Math.max(1, Number(itemForm.applicability) || 1);
-const barcodeVal = itemForm.barcode.trim() || generateBarcode(itemForm.name + Date.now());
-
-setState((prev) => ({
-...prev,
-models: prev.models.map((m) => {
-if (m.id !== targetId) return m;
-if (editingItemId) {
-return {
-...m,
-bom: m.bom.map((b) =>
-b.id === editingItemId
-? {
-...b,
-name: itemForm.name.trim(),
-unit: itemForm.unit || "шт",
-applicability: appQty,
-barcode: barcodeVal,
-}
-: b
-),
-};
-}
-return {
-...m,
-bom: [
-...m.bom,
-{
-id: bom-${Date.now()}`,
-name: itemForm.name.trim(),
-unit: itemForm.unit || "шт",
-applicability: appQty,
-barcode: barcodeVal,
-},
- ],
-};
-}),
-}));
-
-setEditingItemId(null);
-setItemForm({ name: "", unit: "шт", applicability: 1, barcode: "" });
-showToast(editingItemId ? "Номенклатура обновлена" : "Номенклатура добавлена");
-};
-
-const handleDeleteBomItem = (modelId, itemId) => {
-setState((prev) => ({
-...prev,
-models: prev.models.map((m) =>
-m.id === modelId ? { ...m, bom: m.bom.filter((b) => b.id !== itemId) } : m
-),
-}));
-showToast("Номенклатура удалена");
-};
-
-// CRUD: База людей (получатели ТМЦ)
-const handleSavePerson = (e) => {
-e.preventDefault();
-if (!personForm.fio.trim()) {
-showToast("Введите ФИО работника");
-return;
-}
-if (editingPersonId) {
-setState((prev) => ({
-...prev,
-people: prev.people.map((p) =>
-p.id === editingPersonId
-? { ...p, fio: personForm.fio.trim(), department: personForm.department.trim() }
-: p
-),
-}));
-setEditingPersonId(null);
-setPersonForm({ fio: "", department: "" });
-showToast("Данные работника обновлены");
-return;
-}
-setState((prev) => ({
-...prev,
-people: [
-...prev.people,
-{
-id: p-${Date.now()}`,
-fio: personForm.fio.trim(),
-department: personForm.department.trim() || "Производственный цех",
-},
- ],
-}));
-setPersonForm({ fio: "", department: "" });
-showToast("Работник добавлен в базу получателей");
-};
-
-const handleDeletePerson = (id) => {
-setState((prev) => ({
-...prev,
-people: prev.people.filter((p) => p.id !== id),
-}));
-showToast("Работник удален из базы");
-};
-
-// Массовая загрузка состава (без заводского кода)
-const handleImportBom = (e) => {
-e.preventDefault();
-const lines = importText
-.split("\n")
-.map((l) => l.trim())
-.filter(Boolean);
-
-const parsedItems = lines.map((line, idx) => {
-const parts = line.split(/[|;\t]/).map((p) => p.trim());
-const name = parts[0] || Узел климатической системы №${idx + 1}; const unit = parts[1] || "шт"; const applicability = Math.max(1, parseInt(parts[2], 10) || 1); const barcode = parts[3] && /^\d{8,14}$/.test(parts[3]) ? parts[3] : generateBarcode(name + idx);
-return {
-id: imp-${Date.now()}-${idx},
-name,
-unit,
-applicability,
-barcode,
-};
-});
-
-if (parsedItems.length === 0) {
-showToast("Нет строк для загрузки");
-return;
-}
-
-setState((prev) => ({
-...prev,
-models: prev.models.map((m) => {
-if (m.id !== targetModelForImport) return m;
-return {
-...m,
-bom: replaceExistingBom ? parsedItems : [...m.bom, ...parsedItems],
-};
-}),
-}));
-setSelectedModelId(targetModelForImport);
-setShowImportModal(false);
-showToast("Состав загружен в модель автобуса");
-};
-
-const reportRows = useMemo(() => {
-const modelObj = state.models.find((m) => m.id === reportModelId) || state.models[0];
-if (!modelObj) return [];
-const cleanBody = reportBodyNumber.trim().toUpperCase();
-const codeFilter = reportCodeFilter.trim().toLowerCase();
-
-return modelObj.bom
-.filter((item) => {
-if (!codeFilter) return true;
-return item.name.toLowerCase().includes(codeFilter) || item.barcode.toLowerCase().includes(codeFilter);
-})
-.map((item) => {
-const matchingIssues = state.issues.filter((iss) => {
-const sameModel = iss.modelId === modelObj.id;
-const sameBody = cleanBody ? (iss.bodyNumber || "").trim().toUpperCase() === cleanBody : true;
-const hasItem = (iss.items || []).some(
-(it) => it.itemId === item.id || it.name === item.name
-);
-return sameModel && sameBody && hasItem;
-});
-
-let issuedTotal = 0;
-let lastDate = "—";
-let lastRecipient = "—";
-let lastIssuer = "—";
-let lastSerial = "";
-
-matchingIssues.forEach((iss) => {
-const found = (iss.items || []).find(
-(it) => it.itemId === item.id || it.name === item.name
-);
-if (found) {
-issuedTotal += Number(found.qty) || 0;
-if (found.serialNumber) lastSerial = found.serialNumber;
-}
-lastDate = iss.dateTime;
-lastRecipient = iss.recipient;
-lastIssuer = iss.issuer;
-});
-
-const remaining = Math.max(0, item.applicability - issuedTotal);
-
-return {
-id: item.id,
-name: item.name,
-unit: item.unit,
-applicability: item.applicability,
-issuedTotal,
-remaining,
-lastDate,
-lastRecipient,
-lastIssuer,
-lastSerial,
-};
-});
-}, [state.models, state.issues, reportModelId, reportBodyNumber, reportCodeFilter]);
-
-const filteredIssues = useMemo(() => {
-const q = issueSearch.trim().toLowerCase();
-if (!q) return state.issues;
-return state.issues.filter(
-(iss) =>
-iss.docNumber.toLowerCase().includes(q) ||
-(iss.bodyNumber || "").toLowerCase().includes(q) ||
-(iss.modelId || "").toLowerCase().includes(q) ||
-(iss.recipient || "").toLowerCase().includes(q) ||
-(iss.issuer || "").toLowerCase().includes(q)
-);
-}, [state.issues, issueSearch]);
-
-return (
-<div className="min-h-screen pb-24 text-[#1F2428]">
-{/* Верхняя шапка */}
-<header className="bg-[#232A32] text-white border-b-4 border-[#EAB308] px-3 py-2.5 shadow-sm no-print">
-<div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
-<div className="min-w-0">
-<div className="flex items-center gap-2">
-<span className="bg-[#EAB308] text-[#1F2428] text-[11px] font-extrabold px-1.5 py-0.5 rounded-sm">
-1С:ERP
-</span>
-<span className="text-xs sm:text-sm font-bold truncate">НЕФАЗ • КЛИМАТИЧЕСКИЕ СИСТЕМЫ</span>
-</div>
-<p className="text-[11px] text-stone-300 truncate mt-0.5">
-Аккаунт: <strong>{activeAccount?.fio || "Не выбран"}</strong>
-</p>
-</div>
-
-<div className="flex items-center gap-1.5">
-<button
-onClick={() => {
-setItemTargetModelId(activeModel?.id || state.models[0]?.id || "");
-setDbModalOpen(true);
-}}
-className="bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold px-2.5 py-2 rounded-sm flex items-center gap-1 cursor-pointer"
->
-<Icon name="database" className="w-3.5 h-3.5" />
-<span>База</span>
-</button>
-
-<button
-onClick={() => {
-setAuthMode("qr-login");
-setAuthModalOpen(true);
-}}
-className="bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold px-2.5 py-2 rounded-sm flex items-center gap-1 cursor-pointer"
->
-<Icon name="user-check" className="w-3.5 h-3.5" />
-<span>QR-вход</span>
-</button>
-
-<button
-onClick={openWizard}
-className="bg-[#EAB308] hover:bg-amber-400 text-[#1F2428] font-bold text-xs sm:text-sm px-3 py-2 rounded-sm shadow flex items-center gap-1 cursor-pointer"
->
-<Icon name="qr-code" className="w-4 h-4" />
-<span>Выдать ТМЦ</span>
-</button>
-</div>
-</div>
-</header>
-
-{toast && (
-<div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1F2428] text-white text-xs sm:text-sm px-4 py-2 rounded-sm shadow-lg border border-amber-400">
-{toast}
-</div>
-)}
-
-<main className="max-w-6xl mx-auto px-3 pt-3">
-{/* СОСТАВ ИЗДЕЛИЯ */}
-{activeTab === "bom" && (
-<div className="space-y-3">
-<div className="bg-[#F9F8F4] border border-[#C8C3B8] rounded-sm p-3 shadow-sm">
-<div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-stone-300">
-<div>
-<h2 className="text-sm sm:text-base font-bold">Состав изделия</h2>
-<p className="text-xs text-stone-600">
-Номенклатура комплекта климата, применяемость, QR модели и штрихкоды
-</p>
-</div>
-<div className="flex flex-wrap items-center gap-2">
-<button
-onClick={() => {
-setTargetModelForImport(activeModel?.id || "");
-setShowImportModal(true);
-}}
-className="bg-[#1D4ED8] hover:bg-blue-800 text-white text-xs font-semibold px-3 py-1.5 rounded-sm flex items-center gap-1.5 cursor-pointer"
->
-<Icon name="upload" className="w-3.5 h-3.5" />
-<span>Загрузить состав в модель</span>
-</button>
-{activeModel && (
-<button
-onClick={() =>
-setQrPreview({
-title: "QR-код модели автобуса",
-subtitle: activeModel.name,
-code: activeModel.qrCode,
-})
-}
-className="bg-white hover:bg-stone-100 border border-stone-400 text-stone-900 text-xs font-semibold px-3 py-1.5 rounded-sm flex items-center gap-1.5 cursor-pointer"
->
-<Icon name="qr-code" className="w-3.5 h-3.5" />
-<span>QR модели</span>
-</button>
-)}
-</div>
-</div>
-
-<div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-2">
-<label className="text-xs font-bold uppercase text-stone-600">Модель автобуса:</label>
-<select
-value={activeModel?.id || ""}
-onChange={(e) => setSelectedModelId(e.target.value)}
-className="bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs sm:text-sm font-semibold flex-1"
->
-{state.models.map((m) => (
-<option key={m.id} value={m.id}>
-{m.name} — QR: {m.qrCode}
-</option>
-))}
-</select>
-</div>
-
-<form
-onSubmit={handleSaveBomItem}
-className="mt-3 bg-[#EFECE4] border border-stone-300 p-2.5 rounded-sm grid grid-cols-1 sm:grid-cols-5 gap-2"
->
-<input
-type="text"
-placeholder="Наименование номенклатуры"
-value={itemForm.name}
-onChange={(e) => {
-setItemTargetModelId(activeModel?.id || "");
-setItemForm({ ...itemForm, name: e.target.value });
-}}
-className="bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs sm:col-span-2"
-/>
-<input
-type="number"
-min="1"
-placeholder="Применяемость"
-value={itemForm.applicability}
-onChange={(e) => setItemForm({ ...itemForm, applicability: e.target.value })}
-className="bg-white border border-stone-400 rounded-sm px-2 py-1.5 text-xs font-bold"
-/>
-<select
-value={itemForm.unit}
-onChange={(e) => setItemForm({ ...itemForm, unit: e.target.value })}
-className="bg-white border border-stone-400 rounded-sm px-2 py-1.5 text-xs"
->
-<option value="шт">шт</option>
-<option value="компл">компл</option>
-<option value="м">м</option>
-</select>
-<button
-type="submit"
-className="bg-[#15803D] hover:bg-green-800 text-white text-xs font-bold py-1.5 px-3 rounded-sm cursor-pointer"
->
-{editingItemId ? "Сохранить" : "+ В состав"}
-</button>
-</form>
-</div>
-
-<div className="bg-white border border-[#C8C3B8] rounded-sm shadow-sm overflow-x-auto">
-<table className="w-full text-left border-collapse text-xs">
-<thead>
-<tr className="bg-[#E5E1D6] text-stone-800 border-b border-stone-400">
-<th className="p-2 font-bold">Наименование</th>
-<th className="p-2 font-bold text-center">Применяемость</th>
-<th className="p-2 font-bold">Штрихкод</th>
-<th className="p-2 font-bold text-right">Действия</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-stone-200">
-{(activeModel?.bom || []).map((item) => (
-<tr key={item.id} className="hover:bg-amber-50/50">
-<td className="p-2 font-medium text-stone-900">{item.name}</td>
-<td className="p-2 text-center font-bold whitespace-nowrap">
-{item.applicability} {item.unit}
-</td>
-<td className="p-2">
-<BarcodeSVG value={item.barcode} height={32} />
-</td>
-<td className="p-2 text-right whitespace-nowrap">
-<button
-onClick={() => {
-setItemTargetModelId(activeModel.id);
-setEditingItemId(item.id);
-setItemForm({
-name: item.name,
-unit: item.unit,
-applicability: item.applicability,
-barcode: item.barcode,
-});
-}}
-className="text-blue-700 hover:underline font-semibold mr-2 cursor-pointer"
->
-Изм.
-</button>
-<button
-onClick={() => handleDeleteBomItem(activeModel.id, item.id)}
-className="text-red-700 hover:underline font-semibold cursor-pointer"
->
-Удал.
-</button>
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)}
-
-{/* УЧЕТ ТМЦ В СКЛАДЕ — ЖУРНАЛ ВЫДАЧИ */}
-{activeTab === "warehouse" && (
-<div className="space-y-3">
-<div className="bg-[#F9F8F4] border border-[#C8C3B8] rounded-sm p-3 shadow-sm">
-<div className="flex flex-wrap items-center justify-between gap-2">
-<div>
-<h2 className="text-sm sm:text-base font-bold">Учет ТМЦ в складе — Журнал выдачи</h2>
-<p className="text-xs text-stone-600">
-Выдача по модели автобуса, номеру кузова, получателю и ответственному
-</p>
-</div>
-<button
-onClick={openWizard}
-className="bg-[#15803D] hover:bg-green-800 text-white text-xs sm:text-sm font-bold px-4 py-2 rounded-sm shadow flex items-center gap-1.5 cursor-pointer"
->
-<Icon name="plus-circle" className="w-4 h-4" />
-<span>Выдать ТМЦ со склада</span>
-</button>
-</div>
-
-<div className="mt-3 pt-3 border-t border-stone-300">
-<div className="text-[11px] font-bold uppercase text-stone-600 mb-2">
-QR-коды моделей автобусов:
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-{state.models.map((m) => (
-<div
-key={m.id}
-className="bg-white border border-stone-300 rounded-sm p-2 flex items-center justify-between gap-2"
->
-<div className="min-w-0">
-<div className="text-xs font-bold truncate">{m.name}</div>
-<div className="text-[11px] font-mono text-stone-600 truncate">{m.qrCode}</div>
-</div>
-<button
-onClick={() =>
-setQrPreview({
-title: "QR-код модели автобуса",
-subtitle: m.name,
-code: m.qrCode,
-})
-}
-className="shrink-0 bg-stone-100 hover:bg-stone-200 border border-stone-300 px-2 py-1 rounded-sm text-xs font-semibold cursor-pointer"
->
-QR
-</button>
-</div>
-))}
-</div>
-</div>
-
-<div className="mt-3">
-<input
-type="text"
-placeholder="Поиск по номеру выдачи, кузову, модели, получателю или ответственному..."
-value={issueSearch}
-onChange={(e) => setIssueSearch(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-1.5 text-xs sm:text-sm"
-/>
-</div>
-</div>
-
-<div className="bg-white border border-[#C8C3B8] rounded-sm shadow-sm overflow-x-auto">
-<table className="w-full text-left border-collapse text-xs">
-<thead>
-<tr className="bg-[#E5E1D6] text-stone-800 border-b border-stone-400">
-<th className="p-2 font-bold">№ выдачи</th>
-<th className="p-2 font-bold">Дата и время</th>
-<th className="p-2 font-bold">Модель автобуса</th>
-<th className="p-2 font-bold">№ кузова</th>
-<th className="p-2 font-bold">Получатель</th>
-<th className="p-2 font-bold">Ответственный</th>
-<th className="p-2 font-bold">Состав / Серийный № / Комментарий</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-stone-200">
-{filteredIssues.map((iss) => (
-<tr key={iss.id} className="hover:bg-amber-50/50 align-top">
-<td className="p-2 font-mono font-bold whitespace-nowrap text-blue-900">
-{iss.docNumber}
-</td>
-<td className="p-2 whitespace-nowrap text-stone-700">{iss.dateTime}</td>
-<td className="p-2 font-semibold">{iss.modelId}</td>
-<td className="p-2 font-mono font-bold whitespace-nowrap">{iss.bodyNumber}</td>
-<td className="p-2">{iss.recipient}</td>
-<td className="p-2 text-stone-700">{iss.issuer}</td>
-<td className="p-2">
-<ul className="space-y-0.5">
-{(iss.items || []).map((it, idx) => (
-<li key={idx} className="text-[11px]">
-{it.name}{" "}
-<strong className="text-green-800">
-({it.qty} {it.unit})
-</strong>
-{it.serialNumber && (
-<span className="ml-1 font-mono text-stone-600">
-[S/N: {it.serialNumber}]
-</span>
-)}
-</li>
-))}
-</ul>
-{iss.comment && (
-<div className="text-[11px] text-stone-500 italic mt-1">{iss.comment}</div>
-)}
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)}
-
-{/* ОТЧЕТ ПО ВЫДАЧЕ (КОМПЛЕКТАЦИЯ КУЗОВА) */}
-{activeTab === "report" && (
-<div className="space-y-3">
-<div className="bg-[#F9F8F4] border border-[#C8C3B8] rounded-sm p-3 shadow-sm">
-<div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-300">
-<div>
-<h2 className="text-sm sm:text-base font-bold">Отчет по выдаче (Комплектация кузова)</h2>
-<p className="text-xs text-stone-600">
-Укажите модель, номер кузова и номенклатуру — загрузится весь состав изделия
-</p>
-</div>
-<button
-onClick={() => window.print()}
-className="bg-white hover:bg-stone-100 border border-stone-400 text-xs font-semibold px-3 py-1.5 rounded-sm cursor-pointer no-print"
->
-Печать
-</button>
-</div>
-
-<div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-<div>
-<label className="block text-[11px] font-bold uppercase text-stone-600 mb-1">
-Модель автобуса
-</label>
-<select
-value={reportModelId}
-onChange={(e) => setReportModelId(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs font-semibold"
->
-{state.models.map((m) => (
-<option key={m.id} value={m.id}>
-{m.name}
-</option>
-))}
-</select>
-</div>
-
-<div>
-<label className="block text-[11px] font-bold uppercase text-stone-600 mb-1">
-Номер кузова
-</label>
-<input
-type="text"
-list="report-bodies-list"
-placeholder="Например: XTY529900R0004812"
-value={reportBodyNumber}
-onChange={(e) => setReportBodyNumber(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs font-mono"
-/>
-<datalist id="report-bodies-list">
-{knownBodies.map((b) => (
-<option key={b.bodyNumber} value={b.bodyNumber} />
-))}
-</datalist>
-</div>
-
-<div>
-<label className="block text-[11px] font-bold uppercase text-stone-600 mb-1">
-Номенклатура / ШК
-</label>
-<input
-type="text"
-placeholder="Фильтр по детали..."
-value={reportCodeFilter}
-onChange={(e) => setReportCodeFilter(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
-/>
-</div>
-</div>
-</div>
-
-<div className="bg-white border border-[#C8C3B8] rounded-sm shadow-sm overflow-x-auto">
-<table className="w-full text-left border-collapse text-xs">
-<thead>
-<tr className="bg-[#E5E1D6] text-stone-800 border-b border-stone-400">
-<th className="p-2 font-bold">Наименование</th>
-<th className="p-2 font-bold">Получатель</th>
-<th className="p-2 font-bold">Ответственный</th>
-<th className="p-2 font-bold">Дата</th>
-<th className="p-2 font-bold text-right">Выдано</th>
-<th className="p-2 font-bold text-right">Применяемость</th>
-<th className="p-2 font-bold text-right">Осталось выдать</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-stone-200">
-{reportRows.map((row) => (
-<tr key={row.id} className="hover:bg-amber-50/40">
-<td className="p-2 font-medium">
-<div>{row.name}</div>
-{row.lastSerial && (
-<div className="text-[10px] font-mono text-stone-500">S/N: {row.lastSerial}</div>
-)}
-</td>
-<td className="p-2">{row.lastRecipient}</td>
-<td className="p-2">{row.lastIssuer}</td>
-<td className="p-2 whitespace-nowrap text-stone-600">{row.lastDate}</td>
-<td className="p-2 text-right font-bold text-blue-900">
-{row.issuedTotal} {row.unit}
-</td>
-<td className="p-2 text-right font-semibold">
-{row.applicability} {row.unit}
-</td>
-<td className="p-2 text-right font-extrabold">
-<span
-className={px-2 py-0.5 rounded-sm ${
-row.remaining === 0
-? "bg-green-100 text-green-900"
-: "bg-amber-100 text-amber-900"
-}`}
->
-{row.remaining} {row.unit}
-</span>
-</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)}
-</main>
-
-{/* НИЖНЯЯ ПАНЕЛЬ ВКЛАДОК В 1 СТРОЧКУ */}
-<nav className="fixed bottom-0 inset-x-0 z-40 bg-[#232A32] border-t-2 border-[#EAB308] text-white no-print">
-<div className="max-w-6xl mx-auto grid grid-cols-3">
-<button
-onClick={() => setActiveTab("bom")}
-className={py-2.5 px-1 text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer border-r border-stone-700${
-activeTab === "bom" ? "bg-[#EAB308] text-[#1F2428]" : "text-stone-200 hover:bg-stone-800"
-}`}
->
-<Icon name="layers" className="w-3.5 h-3.5 shrink-0" />
-<span className="truncate">Состав изделия</span>
-</button>
-
-<button
-onClick={() => setActiveTab("warehouse")}
-className={py-2.5 px-1 text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer border-r border-stone-700 ${
-activeTab === "warehouse" ? "bg-[#EAB308] text-[#1F2428]" : "text-stone-200 hover:bg-stone-800"
-}`}
->
-<Icon name="package-check" className="w-3.5 h-3.5 shrink-0" />
-<span className="truncate">Учет ТМЦ / Выдача</span>
-</button>
-
-<button
-onClick={() => setActiveTab("report")}
-className={py-2.5 px-1 text-[11px] sm:text-xs font-bold whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer${
-activeTab === "report" ? "bg-[#EAB308] text-[#1F2428]" : "text-stone-200 hover:bg-stone-800"
-}`}
->
-<Icon name="clipboard-list" className="w-3.5 h-3.5 shrink-0" />
-<span className="truncate">Отчет по выдаче</span>
-</button>
-</div>
-</nav>
-
-{/* МОДАЛЬНОЕ ОКНО: 3-ШАГОВЫЙ МАСТЕР ВЫДАЧИ ТМЦ */}
-{wizardOpen && (
-<div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-<div className="bg-[#F9F8F4] border-2 border-[#232A32] rounded-sm w-full max-w-xl shadow-2xl overflow-hidden my-auto">
-<div className="bg-[#232A32] text-white px-4 py-3 flex items-center justify-between">
-<div>
-<div className="text-xs text-amber-400 font-bold uppercase">
-Шаг {wizardStep} из 3 — Выдача ТМЦ со склада
-</div>
-<div className="text-sm font-bold">
-{wizardStep === 1 && "Модель автобуса и номер кузова"}
-{wizardStep === 2 && "Сканирование / выбор ТМЦ, серийный № и количество"}
-{wizardStep === 3 && "ФИО получателя и проведение"}
-</div>
-</div>
-<button
-onClick={() => {
-stopCamera();
-setWizardOpen(false);
-}}
-className="text-stone-300 hover:text-white px-2 py-1 text-sm font-bold cursor-pointer"
->
-✕
-</button>
-</div>
-
-{cameraMode && (
-<div className="bg-black text-white p-3 border-b border-stone-700">
-<div className="flex items-center justify-between text-xs mb-2">
-<span className="font-semibold text-amber-400">
-{cameraMode === "model-qr"
-? "Наведите камеру на QR-код модели автобуса"
-: "Наведите камеру на штрихкод номенклатуры"}
-</span>
-<button
-onClick={stopCamera}
-className="bg-red-600 text-white px-2.5 py-1 rounded-sm text-xs font-bold cursor-pointer"
->
-Закрыть камеру
-</button>
-</div>
-<video
-ref={videoRef}
-playsInline
-muted
-className="w-full max-h-52 object-cover rounded-sm bg-stone-900"
-/>
-{cameraError && <p className="text-xs text-amber-300 mt-2">{cameraError}</p>}
-</div>
-)}
-
-{wizardStep === 1 && (
-<div className="p-4 space-y-4">
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-Строка 1: QR-код или модель автобуса
-</label>
-<div className="flex gap-2">
-<input
-type="text"
-placeholder="Введите или отсканируйте модель автобуса..."
-value={wizardModelManual}
-onChange={(e) => {
-const val = e.target.value;
-setWizardModelManual(val);
-const matched = state.models.find(
-(m) =>
-m.name.toLowerCase() === val.toLowerCase() ||
-m.id.toLowerCase() === val.toLowerCase() ||
-m.qrCode.toLowerCase() === val.toLowerCase()
-);
-if (matched) setWizardModelId(matched.id);
-}}
-className="flex-1 bg-white border border-stone-400 rounded-sm px-3 py-2 text-sm font-semibold"
-/>
-<button
-type="button"
-onClick={() => startCameraScanner("model-qr")}
-className="bg-[#1D4ED8] hover:bg-blue-800 text-white px-3 py-2 rounded-sm text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
->
-<Icon name="camera" className="w-4 h-4" />
-<span>QR</span>
-</button>
-</div>
-
-<div className="mt-2 flex flex-wrap gap-1.5">
-{state.models.map((m) => (
-<button
-key={m.id}
-type="button"
-onClick={() => {
-setWizardModelId(m.id);
-setWizardModelManual(m.name);
-}}
-className={text-xs px-2.5 py-1 rounded-sm border cursor-pointer ${
-wizardModelId === m.id
-? "bg-amber-200 border-amber-500 font-bold"
-: "bg-white border-stone-300 text-stone-700"
-}`}
->
-{m.name}
-</button>
-))}
-</div>
-</div>
-
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-Строка 2: Номер кузова
-</label>
-<input
-type="text"
-placeholder="Например: XTY529900R0004812"
-value={wizardBodyNumber}
-onChange={(e) => setWizardBodyNumber(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-2 text-sm font-mono font-bold"
-/>
-</div>
-
-<div className="pt-2 flex justify-end gap-2 border-t border-stone-300">
-<button
-type="button"
-onClick={() => {
-stopCamera();
-setWizardOpen(false);
-}}
-className="px-4 py-2 bg-white border border-stone-400 rounded-sm text-xs font-bold cursor-pointer"
->
-Отмена
-</button>
-<button
-type="button"
-onClick={() => {
-if (!wizardBodyNumber.trim()) {
-showToast("Введите номер кузова");
-return;
-}
-stopCamera();
-setWizardStep(2);
-}}
-className="px-5 py-2 bg-[#15803D] hover:bg-green-800 text-white rounded-sm text-xs font-bold cursor-pointer"
->
-Далее к выдаче ТМЦ →
-</button>
-</div>
-</div>
-)}
-
-{wizardStep === 2 && (
-<form onSubmit={handleAddDraftItem} className="p-4 space-y-3">
-<div className="bg-[#EFECE4] border border-stone-300 px-3 py-2 rounded-sm text-xs flex flex-wrap justify-between gap-2">
-<span>
-<strong>Модель:</strong> {currentWizardModel?.name || wizardModelManual}
-</span>
-<span>
-<strong>Кузов:</strong> <span className="font-mono font-bold">{wizardBodyNumber}</span>
-</span>
-</div>
-
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-Штрихкод или наименование ТМЦ
-</label>
-<div className="flex gap-2">
-<input
-type="text"
-placeholder="Сканируйте штрихкод или введите наименование..."
-value={scanInput}
-onChange={(e) => {
-setScanInput(e.target.value);
-handleItemLookup(e.target.value);
-}}
-className="flex-1 bg-white border border-stone-400 rounded-sm px-3 py-2 text-sm font-mono"
-/>
-<button
-type="button"
-onClick={() => startCameraScanner("item-barcode")}
-className="bg-[#1D4ED8] hover:bg-blue-800 text-white px-3 py-2 rounded-sm text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
->
-<Icon name="camera" className="w-4 h-4" />
-<span>ШК</span>
-</button>
-</div>
-
-<select
-value={selectedBomId}
-onChange={(e) => {
-const id = e.target.value;
-setSelectedBomId(id);
-const found = currentWizardModel?.bom.find((x) => x.id === id);
-if (found) {
-setScanInput(found.barcode);
-const already = getIssuedQtyForBody(wizardBodyNumber, found.id, found.name);
-const rem = Math.max(0, found.applicability - already);
-setAlreadyIssuedBanner(
-already > 0
-? {
-name: found.name,
-issued: already,
-applicability: found.applicability,
-remaining: rem,
-}
-: null
-);
-setIssueQty(rem > 0 ? Math.min(1, rem) : 0);
-}
-}}
-className="mt-2 w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
->
-<option value="">-- Выберите деталь из состава изделия --</option>
-{(currentWizardModel?.bom || []).map((b) => {
-const issuedNow = getIssuedQtyForBody(wizardBodyNumber, b.id, b.name);
-const remNow = Math.max(0, b.applicability - issuedNow);
-return (
-<option key={b.id} value={b.id}>
-{b.name} — примен.: {b.applicability}, ост.: {remNow} {b.unit}
-</option>
-);
-})}
-</select>
-</div>
-
-{alreadyIssuedBanner && (
-<div className="bg-red-100 border-2 border-red-600 text-red-950 p-3 rounded-sm">
-<div className="font-extrabold text-xs sm:text-sm uppercase">
-Внимание: товар уже был выдан!
-</div>
-<div className="text-xs mt-0.5">
-Позиция <strong>{alreadyIssuedBanner.name}</strong> уже выдавалась на кузов{" "}
-<span className="font-mono">{wizardBodyNumber}</span> ({alreadyIssuedBanner.issued} из{" "}
-{alreadyIssuedBanner.applicability}, остаток: {alreadyIssuedBanner.remaining}).
-</div>
-</div>
-)}
-
-{/* Необязательный серийный номер */}
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-Серийный номер (необязательно)
-</label>
-<input
-type="text"
-placeholder="Введите серийный номер детали (если есть)..."
-value={serialNumberInput}
-onChange={(e) => setSerialNumberInput(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-1.5 text-xs sm:text-sm font-mono"
-/>
-</div>
-
-{selectedBomObj && (
-<div className="bg-white border border-stone-300 p-3 rounded-sm flex items-center justify-between gap-3">
-<div className="text-xs">
-<div className="font-bold text-stone-900">{selectedBomObj.name}</div>
-<div className="text-stone-600">
-Применяемость: <strong>{selectedBomObj.applicability}</strong> {selectedBomObj.unit} •
-Остаток: <strong className="text-blue-900">{remainingForSelected}</strong>{" "}
-{selectedBomObj.unit}
-</div>
-</div>
-<div className="shrink-0">
-<label className="block text-[10px] font-bold uppercase text-stone-600">Кол-во</label>
-<input
-type="number"
-min={remainingForSelected > 0 ? 1 : 0}
-max={remainingForSelected}
-value={issueQty}
-onChange={(e) => {
-const val = Number(e.target.value) || 0;
-setIssueQty(Math.min(remainingForSelected, Math.max(0, val)));
-}}
-className="w-20 bg-amber-50 border-2 border-amber-500 rounded-sm px-2 py-1 text-sm font-extrabold text-center"
-/>
-</div>
-</div>
-)}
-
-<button
-type="submit"
-disabled={!selectedBomObj || remainingForSelected <= 0 || issueQty <= 0}
-className="w-full bg-[#1D4ED8] hover:bg-blue-800 disabled:bg-stone-400 text-white font-bold text-xs sm:text-sm py-2.5 rounded-sm cursor-pointer"
->
-Далее (добавить и выдать следующую номенклатуру)
-</button>
-
-<div className="border-t border-stone-300 pt-2">
-<div className="text-xs font-bold text-stone-700 mb-1">
-Добавлено к выдаче ({draftItems.length}):
-</div>
-{draftItems.length === 0 ? (
-<div className="text-xs text-stone-500">Пока ничего не добавлено</div>
-) : (
-<ul className="space-y-1 max-h-28 overflow-y-auto">
-{draftItems.map((d, i) => (
-<li
-key={i}
-className="flex items-center justify-between bg-white border border-stone-200 px-2.5 py-1 rounded-sm text-xs"
->
-<span className="truncate pr-2">
-{d.name}
-{d.serialNumber ? [S/N:${d.serialNumber}]` : ""}
-</span>
-<span className="font-bold text-green-800 shrink-0">
-{d.qty} {d.unit}
-</span>
-</li>
-))}
-</ul>
-)}
-</div>
-
-<div className="pt-2 flex items-center justify-between gap-2 border-t border-stone-300">
-<button
-type="button"
-onClick={() => {
-stopCamera();
-setWizardStep(1);
-}}
-className="px-3 py-2 bg-white border border-stone-400 rounded-sm text-xs font-bold cursor-pointer"
->
-← Назад
-</button>
-<button
-type="button"
-onClick={() => {
-if (draftItems.length === 0) {
-showToast("Добавьте хотя бы одну позицию перед завершением");
-return;
-}
-stopCamera();
-setWizardStep(3);
-}}
-className="px-4 py-2 bg-[#15803D] hover:bg-green-800 text-white rounded-sm text-xs font-bold cursor-pointer"
->
-Завершить выдачу (ФИО) →
-</button>
-</div>
-</form>
-)}
-
-{wizardStep === 3 && (
-<form onSubmit={handleFinishIssue} className="p-4 space-y-3">
-<div className="bg-white border border-stone-300 rounded-sm p-3 text-xs space-y-1">
-<div>
-<strong>Модель:</strong> {currentWizardModel?.name || wizardModelManual}
-</div>
-<div>
-<strong>Кузов:</strong> <span className="font-mono font-bold">{wizardBodyNumber}</span>
-</div>
-<div>
-<strong>Позиций к выдаче:</strong> {draftItems.length}
-</div>
-</div>
-
-<div>
-<label className="block text-xs font-bold uppercase text-stone-800 mb-1">
-ФИО получателя *
-</label>
-<input
-type="text"
-required
-placeholder="Введите или выберите ФИО получателя..."
-value={recipientName}
-onChange={(e) => setRecipientName(e.target.value)}
-className="w-full bg-white border-2 border-stone-500 rounded-sm px-3 py-2 text-sm font-semibold"
-/>
-{state.people.length > 0 && (
-<div className="mt-2 flex flex-wrap gap-1.5">
-{state.people.map((person) => (
-<button
-key={person.id}
-type="button"
-onClick={() => setRecipientName(person.fio)}
-className="text-[11px] bg-stone-200 hover:bg-stone-300 px-2 py-1 rounded-sm cursor-pointer"
->
-{person.fio}
-</button>
-))}
-</div>
-)}
-</div>
-
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-ФИО ответственного за выдачу
-</label>
-<input
-type="text"
-value={issuerName}
-onChange={(e) => setIssuerName(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-1.5 text-xs"
-/>
-</div>
-
-<div>
-<label className="block text-xs font-bold uppercase text-stone-700 mb-1">
-Комментарий
-</label>
-<input
-type="text"
-placeholder="Например: цех сборки №2"
-value={wizardComment}
-onChange={(e) => setWizardComment(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-1.5 text-xs"
-/>
-</div>
-
-<div className="pt-2 flex items-center justify-between gap-2 border-t border-stone-300">
-<button
-type="button"
-onClick={() => setWizardStep(2)}
-className="px-3 py-2 bg-white border border-stone-400 rounded-sm text-xs font-bold cursor-pointer"
->
-← Назад к позициям
-</button>
-<button
-type="submit"
-className="px-5 py-2 bg-[#15803D] hover:bg-green-800 text-white rounded-sm text-xs sm:text-sm font-bold cursor-pointer"
->
-Провести выдачу в 1С
-</button>
-</div>
-</form>
-)}
-</div>
-</div>
-)}
-
-{/* МОДАЛЬНОЕ ОКНО: РЕГИСТРАЦИЯ И ВХОД ПО QR-КОДУ */}
-{authModalOpen && (
-<div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 overflow-y-auto">
-<div className="bg-[#F9F8F4] border-2 border-[#232A32] rounded-sm w-full max-w-md shadow-2xl overflow-hidden my-auto">
-<div className="bg-[#232A32] text-white px-4 py-3 flex items-center justify-between">
-<div className="text-sm font-bold">Аккаунты и вход по QR-коду</div>
-<button
-onClick={() => {
-stopCamera();
-setAuthModalOpen(false);
-}}
-className="text-stone-300 hover:text-white px-2 cursor-pointer"
->
-✕
-</button>
-</div>
-
-<div className="grid grid-cols-3 border-b border-stone-300 bg-[#EFECE4] text-xs font-bold">
-<button
-type="button"
-onClick={() => {
-stopCamera();
-setAuthMode("qr-login");
-}}
-className={py-2 cursor-pointer ${
-authMode === "qr-login" ? "bg-amber-300 text-stone-950" : "text-stone-700"
-}} &gt; Вход по QR &lt;/button&gt; &lt;button type="button" onClick={() =&gt; { stopCamera(); setAuthMode("register"); }} className={py-2 cursor-pointer ${ authMode === "register" ? "bg-amber-300 text-stone-950" : "text-stone-700" }}
->
-Регистрация
-</button>
-<button
-type="button"
-onClick={() => {
-stopCamera();
-setAuthMode("my-qr");
-}}
-className={py-2 cursor-pointer ${
-authMode === "my-qr" ? "bg-amber-300 text-stone-950" : "text-stone-700"
-}`}
->
-QR аккаунтов
-</button>
-</div>
-
-{cameraMode === "account-qr" && (
-<div className="bg-black text-white p-3">
-<div className="flex items-center justify-between text-xs mb-2">
-<span className="text-amber-400 font-semibold">Наведите камеру на QR аккаунта</span>
-<button
-type="button"
-onClick={stopCamera}
-className="bg-red-600 px-2 py-0.5 rounded-sm text-xs font-bold cursor-pointer"
->
-Стоп
-</button>
-</div>
-<video ref={videoRef} playsInline muted className="w-full max-h-44 object-cover rounded-sm" />
-{cameraError && <p className="text-xs text-amber-300 mt-2">{cameraError}</p>}
-</div>
-)}
-
-{authMode === "qr-login" && (
-<div className="p-4 space-y-3">
-<div className="flex gap-2">
-<input
-type="text"
-placeholder="Сканируйте QR или введите код/ФИО..."
-value={qrLoginInput}
-onChange={(e) => setQrLoginInput(e.target.value)}
-className="flex-1 bg-white border border-stone-400 rounded-sm px-3 py-2 text-xs font-mono"
-/>
-<button
-type="button"
-onClick={() => startCameraScanner("account-qr")}
-className="bg-[#1D4ED8] text-white px-3 py-2 rounded-sm text-xs font-bold flex items-center gap-1 cursor-pointer"
->
-<Icon name="camera" className="w-4 h-4" />
-<span>QR</span>
-</button>
-<button
-type="button"
-onClick={() => {
-if (!loginByQrToken(qrLoginInput)) {
-showToast("Аккаунт по этому QR-коду не найден");
-}
-}}
-className="bg-[#15803D] text-white px-3 py-2 rounded-sm text-xs font-bold cursor-pointer"
->
-Войти
-</button>
-</div>
-
-<div className="space-y-1.5 pt-2 border-t border-stone-300">
-<div className="text-[11px] font-bold uppercase text-stone-600">
-Быстрый выбор зарегистрированного аккаунта:
-</div>
-{state.accounts.map((acc) => (
-<div
-key={acc.id}
-className="bg-white border border-stone-300 rounded-sm p-2 flex items-center justify-between gap-2 text-xs"
->
-<div className="min-w-0">
-<div className="font-bold truncate">{acc.fio}</div>
-<div className="text-[11px] text-stone-500 font-mono truncate">
-{acc.role} • {acc.qrToken}
-</div>
-</div>
-<button
-type="button"
-onClick={() => loginByQrToken(acc.qrToken)}
-className="bg-stone-800 hover:bg-stone-700 text-white px-2.5 py-1 rounded-sm text-xs font-semibold shrink-0 cursor-pointer"
->
-Войти
-</button>
-</div>
-))}
-</div>
-</div>
-)}
-
-{authMode === "register" && (
-<form onSubmit={handleRegisterAccount} className="p-4 space-y-3">
-<div>
-<label className="block text-xs font-bold text-stone-700 mb-1">ФИО сотрудника *</label>
-<input
-type="text"
-required
-placeholder="Например: Ахметов Ильдар Раисович"
-value={regFio}
-onChange={(e) => setRegFio(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-2 text-xs"
-/>
-</div>
-<div>
-<label className="block text-xs font-bold text-stone-700 mb-1">Должность / роль</label>
-<input
-type="text"
-value={regRole}
-onChange={(e) => setRegRole(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-3 py-2 text-xs"
-/>
-</div>
-<button
-type="submit"
-className="w-full bg-[#15803D] hover:bg-green-800 text-white font-bold text-xs py-2.5 rounded-sm cursor-pointer"
->
-Зарегистрировать аккаунт и получить QR-код
-</button>
-</form>
-)}
-
-{authMode === "my-qr" && (
-<div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-{state.accounts.map((acc) => (
-<div
-key={acc.id}
-className="bg-white border border-stone-300 rounded-sm p-3 flex items-center justify-between gap-3"
->
-<div className="min-w-0">
-<div className="text-xs font-bold">{acc.fio}</div>
-<div className="text-[11px] text-stone-600">{acc.role}</div>
-<div className="text-[10px] font-mono text-stone-500 mt-0.5 break-all">
-{acc.qrToken}
-</div>
-</div>
-<QRCodeSVG payload={acc.qrToken} size={86} />
-</div>
-))}
-</div>
-)}
-</div>
-</div>
-)}
-
-{/* МОДАЛЬНОЕ ОКНО: БАЗА ДАННЫХ (МОДЕЛИ АВТОБУСА, НОМЕНКЛАТУРА, ЛЮДИ) */}
-{dbModalOpen && (
-<div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-<div className="bg-[#F9F8F4] border-2 border-[#232A32] rounded-sm w-full max-w-2xl shadow-2xl overflow-hidden my-auto">
-<div className="bg-[#232A32] text-white px-4 py-3 flex items-center justify-between">
-<div className="text-sm font-bold">База данных системы (CRUD)</div>
-<button
-onClick={() => setDbModalOpen(false)}
-className="text-stone-300 hover:text-white px-2 cursor-pointer"
->
-✕
-</button>
-</div>
-
-<div className="grid grid-cols-3 border-b border-stone-300 bg-[#EFECE4] text-xs font-bold">
-<button
-type="button"
-onClick={() => setDbTab("models")}
-className={py-2 cursor-pointer${
-dbTab === "models" ? "bg-amber-300 text-stone-950" : "text-stone-700"
-}} &gt; Модели автобуса &lt;/button&gt; &lt;button type="button" onClick={() =&gt; setDbTab("items")} className={py-2 cursor-pointer latex
-{ dbTab === "items" ? "bg-amber-300 text-stone-950" : "text-stone-700" }`} &gt; Номенклатура &lt;/button&gt; &lt;button type="button" onClick={() =&gt; setDbTab("people")} className={`py-2 cursor-pointer 
-
-{
-dbTab === "people" ? "bg-amber-300 text-stone-950" : "text-stone-700"
-}`}
->
-Люди (получатели)
-</button>
-</div>
-
-<div className="p-4 max-h-[75vh] overflow-y-auto space-y-4">
-{/* База моделей автобусов */}
-{dbTab === "models" && (
-<div className="space-y-3">
-<form onSubmit={handleSaveModel} className="bg-white border border-stone-300 p-3 rounded-sm space-y-2">
-<div className="text-xs font-bold">
-{editingModelId ? "Редактировать модель автобуса" : "Добавить модель автобуса"}
-</div>
-{!editingModelId && (
-<input
-type="text"
-placeholder="Код/артикул модели (например: NEFAZ-5299-40-52)"
-value={modelFormId}
-onChange={(e) => setModelFormId(e.target.value)}
-className="w-full bg-stone-50 border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs font-mono"
-/>
-)}
-<input
-type="text"
-placeholder="Наименование модели автобуса"
-value={modelFormName}
-onChange={(e) => setModelFormName(e.target.value)}
-className="w-full bg-stone-50 border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
-/>
-<div className="flex gap-2">
-<button
-type="submit"
-className="bg-[#15803D] text-white text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-{editingModelId ? "Сохранить изменения" : "Добавить модель"}
-</button>
-{editingModelId && (
-<button
-type="button"
-onClick={() => {
-setEditingModelId(null);
-setModelFormId("");
-setModelFormName("");
-}}
-className="bg-stone-200 text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-Отмена
-</button>
-)}
-</div>
-</form>
-
-<div className="space-y-1.5">
-{state.models.map((m) => (
-<div
-key={m.id}
-className="bg-white border border-stone-300 rounded-sm p-2.5 flex items-center justify-between gap-2 text-xs"
->
-<div className="min-w-0">
-<div className="font-bold truncate">{m.name}</div>
-<div className="text-[11px] font-mono text-stone-500 truncate">
-{m.id} • QR: {m.qrCode}
-</div>
-</div>
-<div className="flex items-center gap-2 shrink-0">
-<button
-type="button"
-onClick={() => {
-setEditingModelId(m.id);
-setModelFormName(m.name);
-}}
-className="text-blue-700 font-semibold hover:underline cursor-pointer"
->
-Изм.
-</button>
-<button
-type="button"
-onClick={() => handleDeleteModel(m.id)}
-className="text-red-700 font-semibold hover:underline cursor-pointer"
->
-Удал.
-</button>
-</div>
-</div>
-))}
-</div>
-</div>
-)}
-
-{/* База номенклатуры */}
-{dbTab === "items" && (
-<div className="space-y-3">
-<div>
-<label className="block text-xs font-bold text-stone-700 mb-1">Модель автобуса:</label>
-<select
-value={itemTargetModelId}
-onChange={(e) => {
-setItemTargetModelId(e.target.value);
-setEditingItemId(null);
-}}
-className="w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs font-semibold"
->
-{state.models.map((m) => (
-<option key={m.id} value={m.id}>
-{m.name}
-</option>
-))}
-</select>
-</div>
-
-<form onSubmit={handleSaveBomItem} className="bg-white border border-stone-300 p-3 rounded-sm space-y-2">
-<div className="text-xs font-bold">
-{editingItemId ? "Редактировать номенклатуру" : "Добавить номенклатуру"}
-</div>
-<input
-type="text"
-placeholder="Наименование позиции"
-value={itemForm.name}
-onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-className="w-full bg-stone-50 border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
-/>
-<div className="grid grid-cols-3 gap-2">
-<input
-type="number"
-min="1"
-placeholder="Применяемость"
-value={itemForm.applicability}
-onChange={(e) => setItemForm({ ...itemForm, applicability: e.target.value })}
-className="bg-stone-50 border border-stone-400 rounded-sm px-2 py-1.5 text-xs"
-/>
-<select
-value={itemForm.unit}
-onChange={(e) => setItemForm({ ...itemForm, unit: e.target.value })}
-className="bg-stone-50 border border-stone-400 rounded-sm px-2 py-1.5 text-xs"
->
-<option value="шт">шт</option>
-<option value="компл">компл</option>
-<option value="м">м</option>
-</select>
-<input
-type="text"
-placeholder="Штрихкод (авто)"
-value={itemForm.barcode}
-onChange={(e) => setItemForm({ ...itemForm, barcode: e.target.value })}
-className="bg-stone-50 border border-stone-400 rounded-sm px-2 py-1.5 text-xs font-mono"
-/>
-</div>
-<div className="flex gap-2">
-<button
-type="submit"
-className="bg-[#15803D] text-white text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-{editingItemId ? "Сохранить" : "Добавить позицию"}
-</button>
-{editingItemId && (
-<button
-type="button"
-onClick={() => {
-setEditingItemId(null);
-setItemForm({ name: "", unit: "шт", applicability: 1, barcode: "" });
-}}
-className="bg-stone-200 text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-Отмена
-</button>
-)}
-</div>
-</form>
-
-<div className="space-y-1.5">
-{(state.models.find((m) => m.id === itemTargetModelId)?.bom || []).map((b) => (
-<div
-key={b.id}
-className="bg-white border border-stone-300 rounded-sm p-2 flex items-center justify-between gap-2 text-xs"
->
-<div className="min-w-0">
-<div className="font-bold truncate">{b.name}</div>
-<div className="text-[11px] text-stone-600">
-Примен.: {b.applicability} {b.unit} • ШК: <span className="font-mono">{b.barcode}</span>
-</div>
-</div>
-<div className="flex items-center gap-2 shrink-0">
-<button
-type="button"
-onClick={() => {
-setEditingItemId(b.id);
-setItemForm({
-name: b.name,
-unit: b.unit,
-applicability: b.applicability,
-barcode: b.barcode,
-});
-}}
-className="text-blue-700 font-semibold hover:underline cursor-pointer"
->
-Изм.
-</button>
-<button
-type="button"
-onClick={() => handleDeleteBomItem(itemTargetModelId, b.id)}
-className="text-red-700 font-semibold hover:underline cursor-pointer"
->
-Удал.
-</button>
-</div>
-</div>
-))}
-</div>
-</div>
-)}
-
-{/* База людей (получателей ТМЦ) */}
-{dbTab === "people" && (
-<div className="space-y-3">
-<form onSubmit={handleSavePerson} className="bg-white border border-stone-300 p-3 rounded-sm space-y-2">
-<div className="text-xs font-bold">
-{editingPersonId ? "Редактировать сотрудника" : "Добавить сотрудника в базу получателей"}
-</div>
-<input
-type="text"
-placeholder="ФИО работника"
-value={personForm.fio}
-onChange={(e) => setPersonForm({ ...personForm, fio: e.target.value })}
-className="w-full bg-stone-50 border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
-/>
-<input
-type="text"
-placeholder="Подразделение / цех / участок"
-value={personForm.department}
-onChange={(e) => setPersonForm({ ...personForm, department: e.target.value })}
-className="w-full bg-stone-50 border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs"
-/>
-<div className="flex gap-2">
-<button
-type="submit"
-className="bg-[#15803D] text-white text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-{editingPersonId ? "Сохранить" : "Добавить в базу"}
-</button>
-{editingPersonId && (
-<button
-type="button"
-onClick={() => {
-setEditingPersonId(null);
-setPersonForm({ fio: "", department: "" });
-}}
-className="bg-stone-200 text-xs font-bold px-3 py-1.5 rounded-sm cursor-pointer"
->
-Отмена
-</button>
-)}
-</div>
-</form>
-
-<div className="space-y-1.5">
-{state.people.map((p) => (
-<div
-key={p.id}
-className="bg-white border border-stone-300 rounded-sm p-2.5 flex items-center justify-between gap-2 text-xs"
->
-<div className="min-w-0">
-<div className="font-bold truncate">{p.fio}</div>
-<div className="text-[11px] text-stone-500 truncate">{p.department}</div>
-</div>
-<div className="flex items-center gap-2 shrink-0">
-<button
-type="button"
-onClick={() => {
-setEditingPersonId(p.id);
-setPersonForm({ fio: p.fio, department: p.department });
-}}
-className="text-blue-700 font-semibold hover:underline cursor-pointer"
->
-Изм.
-</button>
-<button
-type="button"
-onClick={() => handleDeletePerson(p.id)}
-className="text-red-700 font-semibold hover:underline cursor-pointer"
->
-Удал.
-</button>
-</div>
-</div>
-))}
-</div>
-</div>
-)}
-</div>
-</div>
-</div>
-)}
-
-{/* МОДАЛЬНОЕ ОКНО: ЗАГРУЗКА СОСТАВА В МОДЕЛЬ */}
-{showImportModal && (
-<div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-3 overflow-y-auto">
-<form
-onSubmit={handleImportBom}
-className="bg-[#F9F8F4] border-2 border-[#232A32] rounded-sm w-full max-w-lg p-4 space-y-3 shadow-xl my-auto"
->
-<div className="flex items-center justify-between border-b border-stone-300 pb-2">
-<h3 className="text-sm font-bold">Загрузка состава изделия в модель автобуса</h3>
-<button
-type="button"
-onClick={() => setShowImportModal(false)}
-className="text-stone-600 font-bold px-2 cursor-pointer"
->
-✕
-</button>
-</div>
-
-<p className="text-xs text-stone-600">
-Формат строки: <span className="font-mono">Наименование | Ед.изм | Применяемость | Штрихкод</span>
-</p>
-
-<textarea
-rows="5"
-value={importText}
-onChange={(e) => setImportText(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm p-2 text-xs font-mono"
-/>
-
-<div>
-<label className="block text-xs font-bold text-stone-700 mb-1">Модель автобуса:</label>
-<select
-value={targetModelForImport}
-onChange={(e) => setTargetModelForImport(e.target.value)}
-className="w-full bg-white border border-stone-400 rounded-sm px-2.5 py-1.5 text-xs font-semibold"
->
-{state.models.map((m) => (
-<option key={m.id} value={m.id}>
-{m.name}
-</option>
-))}
-</select>
-</div>
-
-<label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
-<input
-type="checkbox"
-checked={replaceExistingBom}
-onChange={(e) => setReplaceExistingBom(e.target.checked)}
-/>
-<span>Заменить текущий состав модели</span>
-</label>
-
-<div className="flex justify-end gap-2 pt-2 border-t border-stone-300">
-<button
-type="button"
-onClick={() => setShowImportModal(false)}
-className="px-3 py-1.5 bg-white border border-stone-400 rounded-sm text-xs font-bold cursor-pointer"
->
-Отмена
-</button>
-<button
-type="submit"
-className="px-4 py-1.5 bg-[#1D4ED8] text-white rounded-sm text-xs font-bold cursor-pointer"
->
-Загрузить состав
-</button>
-</div>
-</form>
-</div>
-)}
-
-{/* МОДАЛЬНОЕ ОКНО: QR-КОД */}
-{qrPreview && (
-<div
-onClick={() => setQrPreview(null)}
-className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
->
-<div
-onClick={(e) => e.stopPropagation()}
-className="bg-white border-2 border-[#232A32] rounded-sm p-4 max-w-xs w-full text-center space-y-2 shadow-xl"
->
-<div className="text-xs font-bold uppercase text-stone-500">{qrPreview.title}</div>
-<div className="text-sm font-bold text-stone-900">{qrPreview.subtitle}</div>
-<div className="flex justify-center py-2">
-<QRCodeSVG payload={qrPreview.code} size={150} />
-</div>
-<button
-onClick={() => setQrPreview(null)}
-className="w-full bg-[#232A32] text-white text-xs font-bold py-2 rounded-sm cursor-pointer"
->
-Закрыть
-</button>
-</div>
-</div>
-)}
-</div>
-);
-}
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
-</script>
+  <div id="app"></div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "nefaz_erp_standalone_v1";
+
+      function genBarcode(seedStr) {
+        let hash = 0;
+        const src = String(seedStr || Date.now());
+        for (let i = 0; i < src.length; i++) hash = (hash * 31 + src.charCodeAt(i)) % 1000000000000;
+        const base12 = String(460000000000 + (Math.abs(hash) % 9999999999)).slice(0, 12);
+        let sum = 0;
+        for (let i = 0; i < 12; i++) sum += parseInt(base12[i], 10) * (i % 2 === 0 ? 1 : 3);
+        return base12 + String((10 - (sum % 10)) % 10);
+      }
+
+      function barcodeSVG(code) {
+        const digits = String(code || "4607001000014").split("").map(d => parseInt(d, 10) || 0);
+        let x = 6, rects = "";
+        digits.forEach((d, idx) => {
+          const w1 = (d % 3) + 1;
+          const w2 = ((d + idx) % 2) + 1;
+          rects += `<rect x="${x}" y="2" width="${w1}" height="24" fill="#111"/>`;
+          x += w1 + w2;
+          rects += `<rect x="${x}" y="2" width="1" height="24" fill="#111"/>`;
+          x += 2;
+        });
+        return `<div style="display:inline-block;background:#fff;border:1px solid #ccc;padding:3px 6px;text-align:center">
+          <svg viewBox="0 0 ${x + 6} 28" width="120" height="28">${rects}</svg>
+          <div style="font-family:monospace;font-size:10px">${code}</div>
+        </div>`;
+      }
+
+      function qrSVG(payload, size) {
+        const s = size || 120;
+        const text = String(payload || "NEFAZ");
+        const g = 21;
+        let seed = 1337;
+        for (let i = 0; i < text.length; i++) seed = (seed * 16777619) ^ text.charCodeAt(i);
+        let cells = "";
+        function finder(r0, c0) {
+          for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) {
+            if (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4)) {
+              cells += `<rect x="${c0 + c + 1}" y="${r0 + r + 1}" width="1" height="1" fill="#111"/>`;
+            }
+          }
+        }
+        finder(0, 0); finder(0, g - 7); finder(g - 7, 0);
+        for (let r = 0; r < g; r++) for (let c = 0; c < g; c++) {
+          if ((r < 8 && c < 8) || (r < 8 && c >= g - 8) || (r >= g - 8 && c < 8)) continue;
+          seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+          if ((seed % 100) < 46) cells += `<rect x="${c + 1}" y="${r + 1}" width="1" height="1" fill="#111"/>`;
+        }
+        return `<div style="display:inline-block;background:#fff;border:1px solid #ccc;padding:6px;text-align:center">
+          <svg width="${s}" height="${s}" viewBox="0 0 ${g + 2} ${g + 2}">${cells}</svg>
+          <div style="font-family:monospace;font-size:10px;margin-top:3px">${text}</div>
+        </div>`;
+      }
+
+      const DEFAULT_STATE = {
+        tab: "warehouse",
+        accounts: [
+          { id: "acc-1", fio: "Смирнов Дмитрий Викторович", role: "Кладовщик", qrToken: "QR-USER-SMIRNOV-01" },
+          { id: "acc-2", fio: "Галиев Марат Рамилевич", role: "Мастер смены", qrToken: "QR-USER-GALIEV-02" }
+        ],
+        activeAccountId: "acc-1",
+        people: [
+          { id: "p-1", fio: "Иванов Алексей Сергеевич", department: "Сборочный цех №2" },
+          { id: "p-2", fio: "Петров Максим Олегович", department: "Участок климата" },
+          { id: "p-3", fio: "Сидоров Андрей Николаевич", department: "Сборочный цех №1" }
+        ],
+        models: [
+          {
+            id: "NEFAZ-5299-40-57",
+            name: "НЕФАЗ-5299-40-57 (КЖГ, городской)",
+            qrCode: "QR-MODEL-NEFAZ-5299-40-57",
+            bom: [
+              { id: "b1", name: "Компрессор климатической установки Bitzer", unit: "шт", applicability: 1, barcode: "4607001000014" },
+              { id: "b2", name: "Конденсатор крышный в сборе с вентиляторами", unit: "шт", applicability: 2, barcode: "4607001000021" },
+              { id: "b3", name: "Испаритель салонный передний", unit: "шт", applicability: 1, barcode: "4607001000038" },
+              { id: "b4", name: "Блок управления климат-контролем (ECU)", unit: "шт", applicability: 1, barcode: "4607001000052" },
+              { id: "b5", name: "Отопитель салонный жидкостный Webasto", unit: "шт", applicability: 2, barcode: "4607001000076" }
+            ]
+          },
+          {
+            id: "NEFAZ-5299-30-57-EL",
+            name: "НЕФАЗ-5299-30-57 Электробус",
+            qrCode: "QR-MODEL-NEFAZ-5299-30-57-EL",
+            bom: [
+              { id: "e1", name: "Электрический компрессор HVAC 600V", unit: "шт", applicability: 1, barcode: "4607002000013" },
+              { id: "e2", name: "Крышный климатический блок (тепловой насос)", unit: "шт", applicability: 2, barcode: "4607002000020" }
+            ]
+          }
+        ],
+        issues: [
+          {
+            id: "iss-1",
+            docNumber: "ВД-000101",
+            dateTime: "2026-11-19 09:15",
+            modelId: "NEFAZ-5299-40-57",
+            bodyNumber: "XTY529900R0004812",
+            recipient: "Иванов Алексей Сергеевич",
+            issuer: "Смирнов Дмитрий Викторович",
+            comment: "Сборочный цех №2",
+            items: [
+              { itemId: "b1", name: "Компрессор климатической установки Bitzer", unit: "шт", qty: 1, serialNumber: "SN-BIT-88412" }
+            ]
+          }
+        ]
+      };
+
+      let state;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        state = raw ? Object.assign({}, DEFAULT_STATE, JSON.parse(raw)) : DEFAULT_STATE;
+      } catch (e) {
+        state = DEFAULT_STATE;
+      }
+
+      let ui = {
+        selectedModelId: state.models[0].id,
+        reportModelId: state.models[0].id,
+        reportBody: "",
+        reportFilter: "",
+        issueSearch: "",
+        toast: "",
+        modal: null, // 'wizard' | 'auth' | 'db' | 'import' | 'qr'
+        qrData: null,
+        authTab: "login",
+        dbTab: "models",
+        dbModelId: state.models[0].id,
+        editItemId: null,
+        editModelId: null,
+        editPersonId: null,
+        wizStep: 1,
+        wizModelId: state.models[0].id,
+        wizModelText: state.models[0].name,
+        wizBody: "",
+        wizItemId: "",
+        wizSerial: "",
+        wizQty: 1,
+        wizDraft: [],
+        wizRecipient: "",
+        wizComment: "",
+        camActive: false,
+        camTarget: ""
+      };
+
+      let camStream = null;
+
+      function stopCam() {
+        if (camStream) {
+          camStream.getTracks().forEach(t => t.stop());
+          camStream = null;
+        }
+        ui.camActive = false;
+      }
+
+      function save() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+        render();
+      }
+
+      function notify(msg) {
+        ui.toast = msg;
+        render();
+        setTimeout(() => { ui.toast = ""; render(); }, 2800);
+      }
+
+      function esc(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function getActiveAcc() {
+        return state.accounts.find(a => a.id === state.activeAccountId) || state.accounts[0];
+      }
+
+      function getIssuedQty(body, itemId, itemName) {
+        const clean = (body || "").trim().toUpperCase();
+        if (!clean) return 0;
+        let total = 0;
+        state.issues.forEach(iss => {
+          if ((iss.bodyNumber || "").trim().toUpperCase() === clean) {
+            (iss.items || []).forEach(it => {
+              if (it.itemId === itemId || it.name === itemName) total += Number(it.qty) || 0;
+            });
+          }
+        });
+        ui.wizDraft.forEach(it => {
+          if (it.itemId === itemId || it.name === itemName) total += Number(it.qty) || 0;
+        });
+        return total;
+      }
+
+      function startCam(target) {
+        stopCam();
+        ui.camActive = true;
+        ui.camTarget = target;
+        render();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          notify("Камера недоступна в браузере — введите код вручную");
+          return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } })
+          .then(stream => {
+            camStream = stream;
+            const v = document.getElementById("camVideo");
+            if (v) { v.srcObject = stream; v.play(); }
+            if ("BarcodeDetector" in window) {
+              const det = new window.BarcodeDetector();
+              const tick = () => {
+                if (!camStream || !v) return;
+                if (v.readyState === 4) {
+                  det.detect(v).then(codes => {
+                    if (codes && codes.length > 0 && codes[0].rawValue) {
+                      const val = codes[0].rawValue.trim();
+                      stopCam();
+                      handleScanned(target, val);
+                    } else if (camStream) requestAnimationFrame(tick);
+                  }).catch(() => { if (camStream) requestAnimationFrame(tick); });
+                } else {
+                  requestAnimationFrame(tick);
+                }
+              };
+              requestAnimationFrame(tick);
+            }
+          })
+          .catch(() => notify("Нет доступа к камере — введите значение вручную"));
+      }
+
+      function handleScanned(target, val) {
+        const q = val.toLowerCase();
+        if (target === "auth") {
+          const acc = state.accounts.find(a => a.qrToken.toLowerCase() === q || a.fio.toLowerCase().includes(q));
+          if (acc) { state.activeAccountId = acc.id; ui.modal = null; notify("Вход выполнен: " + acc.fio); save(); }
+          else { notify("Считан QR: " + val); render(); }
+        } else if (target === "model") {
+          const m = state.models.find(x => x.qrCode.toLowerCase() === q || x.id.toLowerCase() === q || x.name.toLowerCase().includes(q));
+          if (m) { ui.wizModelId = m.id; ui.wizModelText = m.name; notify("Модель: " + m.name); }
+          else { ui.wizModelText = val; notify("Считано: " + val); }
+          render();
+        } else if (target === "item") {
+          const m = state.models.find(x => x.id === ui.wizModelId) || state.models[0];
+          const it = m.bom.find(b => b.barcode.toLowerCase() === q || b.name.toLowerCase().includes(q));
+          if (it) {
+            ui.wizItemId = it.id;
+            const rem = Math.max(0, it.applicability - getIssuedQty(ui.wizBody, it.id, it.name));
+            ui.wizQty = rem > 0 ? 1 : 0;
+            notify("Найдено: " + it.name);
+          } else {
+            notify("Позиция не найдена в составе");
+          }
+          render();
+        }
+      }
+
+      function render() {
+        const acc = getActiveAcc();
+        const activeModel = state.models.find(m => m.id === ui.selectedModelId) || state.models[0];
+        let html = "";
+
+        if (ui.toast) html += `<div class="toast">${esc(ui.toast)}</div>`;
+
+        html += `
+          <header>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span class="badge">1С:ERP</span>
+                <strong style="font-size:13px">НЕФАЗ • КЛИМАТИЧЕСКИЕ СИСТЕМЫ</strong>
+              </div>
+              <div style="font-size:11px;color:#D6D3D1;margin-top:2px">Аккаунт: <strong>${esc(acc ? acc.fio : "")}</strong></div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-dark" onclick="AppAPI.openDb()">База</button>
+              <button class="btn btn-dark" onclick="AppAPI.openAuth()">QR-вход</button>
+              <button class="btn btn-amber" onclick="AppAPI.openWizard()">Выдать ТМЦ</button>
+            </div>
+          </header>
+          <div class="container">
+        `;
+
+        // ВКЛАДКА: СОСТАВ ИЗДЕЛИЯ
+        if (state.tab === "bom") {
+          html += `
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                <div>
+                  <h2 class="title">Состав изделия</h2>
+                  <p class="sub">Номенклатура, применяемость, QR модели и штрихкоды</p>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-blue" onclick="AppAPI.openImport()">Загрузить состав</button>
+                  <button class="btn" onclick="AppAPI.showQr('QR-код модели', '${esc(activeModel.name)}', '${esc(activeModel.qrCode)}')">QR модели</button>
+                </div>
+              </div>
+              <label>Модель автобуса:</label>
+              <select onchange="AppAPI.selectModel(this.value)">
+                ${state.models.map(m => `<option value="${esc(m.id)}" ${m.id === activeModel.id ? "selected" : ""}>${esc(m.name)} (${esc(m.qrCode)})</option>`).join("")}
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Наименование</th><th>Примен.</th><th>Штрихкод</th></tr>
+                </thead>
+                <tbody>
+                  ${activeModel.bom.map(b => `
+                    <tr>
+                      <td><strong>${esc(b.name)}</strong></td>
+                      <td style="white-space:nowrap">${b.applicability} ${esc(b.unit)}</td>
+                      <td>${barcodeSVG(b.barcode)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        // ВКЛАДКА: УЧЕТ ТМЦ В СКЛАДЕ — ЖУРНАЛ ВЫДАЧИ
+        if (state.tab === "warehouse") {
+          const q = ui.issueSearch.toLowerCase();
+          const list = state.issues.filter(i =>
+            !q || i.docNumber.toLowerCase().includes(q) || i.bodyNumber.toLowerCase().includes(q) ||
+            i.modelId.toLowerCase().includes(q) || i.recipient.toLowerCase().includes(q)
+          );
+          html += `
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                <div>
+                  <h2 class="title">Учет ТМЦ в складе — Журнал выдачи</h2>
+                  <p class="sub">Выдача по модели, кузову, получателю и ответственному</p>
+                </div>
+                <button class="btn btn-green" onclick="AppAPI.openWizard()">+ Выдать ТМЦ со склада</button>
+              </div>
+              <input placeholder="Поиск по кузову, модели, получателю..." value="${esc(ui.issueSearch)}" oninput="AppAPI.setSearch(this.value)" />
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>№ / Дата</th><th>Модель / Кузов</th><th>Получатель / Ответственный</th><th>Выданные ТМЦ</th></tr>
+                </thead>
+                <tbody>
+                  ${list.map(iss => `
+                    <tr>
+                      <td style="white-space:nowrap"><strong>${esc(iss.docNumber)}</strong><div style="color:#57534E;font-size:11px">${esc(iss.dateTime)}</div></td>
+                      <td><div>${esc(iss.modelId)}</div><strong style="font-family:monospace">${esc(iss.bodyNumber)}</strong></td>
+                      <td><div>Получил: <strong>${esc(iss.recipient)}</strong></div><div style="font-size:11px;color:#57534E">Выдал: ${esc(iss.issuer)}</div></td>
+                      <td>
+                        ${(iss.items || []).map(it => `<div>• ${esc(it.name)} — <strong>${it.qty} ${esc(it.unit)}</strong> ${it.serialNumber ? `<span style="font-family:monospace;color:#444">[S/N: ${esc(it.serialNumber)}]</span>` : ""}</div>`).join("")}
+                      </td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        // ВКЛАДКА: ОТЧЕТ ПО ВЫДАЧЕ
+        if (state.tab === "report") {
+          const repModel = state.models.find(m => m.id === ui.reportModelId) || state.models[0];
+          const cleanBody = ui.reportBody.trim().toUpperCase();
+          const f = ui.reportFilter.trim().toLowerCase();
+          const rows = repModel.bom
+            .filter(b => !f || b.name.toLowerCase().includes(f))
+            .map(b => {
+              let issued = 0, lastDate = "—", lastRec = "—", lastIss = "—";
+              state.issues.forEach(iss => {
+                if (iss.modelId !== repModel.id) return;
+                if (cleanBody && (iss.bodyNumber || "").toUpperCase() !== cleanBody) return;
+                const found = (iss.items || []).find(it => it.itemId === b.id || it.name === b.name);
+                if (found) {
+                  issued += Number(found.qty) || 0;
+                  lastDate = iss.dateTime;
+                  lastRec = iss.recipient;
+                  lastIss = iss.issuer;
+                }
+              });
+              return { b, issued, rem: Math.max(0, b.applicability - issued), lastDate, lastRec, lastIss };
+            });
+
+          html += `
+            <div class="card">
+              <h2 class="title">Отчет по выдаче (Комплектация кузова)</h2>
+              <p class="sub" style="margin-bottom:10px">Укажите модель, номер кузова и номенклатуру</p>
+              <div class="grid-3">
+                <div>
+                  <label>Модель автобуса</label>
+                  <select onchange="AppAPI.setRepModel(this.value)">
+                    ${state.models.map(m => `<option value="${esc(m.id)}" ${m.id === repModel.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}
+                  </select>
+                </div>
+                <div>
+                  <label>Номер кузова</label>
+                  <input placeholder="Например: XTY529900R0004812" value="${esc(ui.reportBody)}" oninput="AppAPI.setRepBody(this.value)" />
+                </div>
+                <div>
+                  <label>Номенклатура</label>
+                  <input placeholder="Фильтр по названию..." value="${esc(ui.reportFilter)}" oninput="AppAPI.setRepFilter(this.value)" />
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Наименование</th><th>Получатель / Отв.</th><th>Дата</th><th>Выдано</th><th>Примен.</th><th>Осталось</th></tr>
+                </thead>
+                <tbody>
+                  ${rows.map(r => `
+                    <tr>
+                      <td><strong>${esc(r.b.name)}</strong></td>
+                      <td><div>${esc(r.lastRec)}</div><div style="font-size:11px;color:#57534E">${esc(r.lastIss)}</div></td>
+                      <td style="white-space:nowrap">${esc(r.lastDate)}</td>
+                      <td><strong>${r.issued}</strong> ${esc(r.b.unit)}</td>
+                      <td>${r.b.applicability} ${esc(r.b.unit)}</td>
+                      <td><strong style="color:${r.rem === 0 ? "#15803D" : "#B45309"}">${r.rem} ${esc(r.b.unit)}</strong></td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        html += `</div>`;
+
+        // НИЖНЯЯ ПАНЕЛЬ ВКЛАДОК В 1 СТРОЧКУ (БЕЗ ЦИФР)
+        html += `
+          <nav class="bottom-nav">
+            <button class="nav-btn ${state.tab === "bom" ? "active" : ""}" onclick="AppAPI.setTab('bom')">Состав изделия</button>
+            <button class="nav-btn ${state.tab === "warehouse" ? "active" : ""}" onclick="AppAPI.setTab('warehouse')">Учет ТМЦ — Журнал выдачи</button>
+            <button class="nav-btn ${state.tab === "report" ? "active" : ""}" onclick="AppAPI.setTab('report')">Отчет по выдаче</button>
+          </nav>
+        `;
+
+        // МОДАЛЬНОЕ ОКНО: ВЫДАЧА ТМЦ (3 ШАГА)
+        if (ui.modal === "wizard") {
+          const wModel = state.models.find(m => m.id === ui.wizModelId) || state.models[0];
+          const selItem = wModel.bom.find(b => b.id === ui.wizItemId);
+          const already = selItem ? getIssuedQty(ui.wizBody, selItem.id, selItem.name) : 0;
+          const rem = selItem ? Math.max(0, selItem.applicability - already) : 0;
+
+          html += `
+            <div class="modal-bg">
+              <div class="modal">
+                <div class="modal-head">
+                  <strong>Выдача ТМЦ — Шаг ${ui.wizStep} из 3</strong>
+                  <button class="btn btn-dark" onclick="AppAPI.closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                  ${ui.camActive ? `
+                    <div style="background:#000;padding:8px;margin-bottom:10px;border-radius:3px">
+                      <video id="camVideo" playsinline muted style="width:100%;max-height:180px;object-fit:cover"></video>
+                      <button class="btn btn-red" style="margin-top:6px;width:100%" onclick="AppAPI.stopCam()">Закрыть камеру</button>
+                    </div>
+                  ` : ""}
+
+                  ${ui.wizStep === 1 ? `
+                    <div style="margin-bottom:10px">
+                      <label>1 строка: QR-код модели или модель автобуса</label>
+                      <div style="display:flex;gap:6px">
+                        <input value="${esc(ui.wizModelText)}" oninput="AppAPI.setWizModelText(this.value)" placeholder="Модель автобуса..." />
+                        <button class="btn btn-blue" onclick="AppAPI.startCam('model')">QR</button>
+                      </div>
+                      <div style="margin-top:6px">
+                        ${state.models.map(m => `<span class="pill" onclick="AppAPI.pickWizModel('${esc(m.id)}')">${esc(m.name)}</span>`).join("")}
+                      </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                      <label>2 строка: Номер кузова</label>
+                      <input value="${esc(ui.wizBody)}" oninput="AppAPI.setWizBody(this.value)" placeholder="Например: XTY529900R0004812" />
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px">
+                      <button class="btn" onclick="AppAPI.closeModal()">Отмена</button>
+                      <button class="btn btn-green" onclick="AppAPI.goStep2()">Далее →</button>
+                    </div>
+                  ` : ""}
+
+                  ${ui.wizStep === 2 ? `
+                    <div style="background:#EFECE4;padding:8px;border-radius:3px;font-size:12px;margin-bottom:10px">
+                      Модель: <strong>${esc(wModel.name)}</strong> | Кузов: <strong>${esc(ui.wizBody)}</strong>
+                    </div>
+                    <div style="margin-bottom:8px">
+                      <label>Штрихкод или выбор ТМЦ</label>
+                      <div style="display:flex;gap:6px;margin-bottom:6px">
+                        <input placeholder="Штрихкод или название..." oninput="AppAPI.lookupItem(this.value)" />
+                        <button class="btn btn-blue" onclick="AppAPI.startCam('item')">ШК</button>
+                      </div>
+                      <select onchange="AppAPI.pickWizItem(this.value)">
+                        <option value="">-- Выберите номенклатуру --</option>
+                        ${wModel.bom.map(b => {
+                          const r = Math.max(0, b.applicability - getIssuedQty(ui.wizBody, b.id, b.name));
+                          return `<option value="${esc(b.id)}" ${b.id === ui.wizItemId ? "selected" : ""}>${esc(b.name)} (примен: ${b.applicability}, ост: ${r})</option>`;
+                        }).join("")}
+                      </select>
+                    </div>
+
+                    ${selItem && already > 0 ? `
+                      <div class="alert-red">
+                        <strong>Внимание: товар уже был выдан!</strong><br/>
+                        Позиция «${esc(selItem.name)}» уже выдана в количестве ${already} из ${selItem.applicability}. Остаток: ${rem}.
+                      </div>
+                    ` : ""}
+
+                    <div class="grid-2" style="margin-bottom:10px">
+                      <div>
+                        <label>Серийный номер (необязательно)</label>
+                        <input value="${esc(ui.wizSerial)}" oninput="AppAPI.setWizSerial(this.value)" placeholder="S/N детали..." />
+                      </div>
+                      <div>
+                        <label>Количество (макс. ${rem})</label>
+                        <input type="number" min="1" max="${rem}" value="${ui.wizQty}" oninput="AppAPI.setWizQty(this.value)" />
+                      </div>
+                    </div>
+
+                    <button class="btn btn-blue" style="width:100%;margin-bottom:10px" ${!selItem || rem <= 0 ? "disabled" : ""} onclick="AppAPI.addDraft()">
+                      Далее (добавить и выбрать следующую позицию)
+                    </button>
+
+                    <div style="font-size:12px;margin-bottom:10px">
+                      <strong>Добавлено к выдаче (${ui.wizDraft.length}):</strong>
+                      ${ui.wizDraft.map(d => `<div>• ${esc(d.name)} — ${d.qty} ${esc(d.unit)} ${d.serialNumber ? `[S/N: ${esc(d.serialNumber)}]` : ""}</div>`).join("") || "<div style='color:#78716C'>Пусто</div>"}
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between">
+                      <button class="btn" onclick="AppAPI.setWizStep(1)">← Назад</button>
+                      <button class="btn btn-green" onclick="AppAPI.goStep3()">Завершить выдачу (ФИО) →</button>
+                    </div>
+                  ` : ""}
+
+                  ${ui.wizStep === 3 ? `
+                    <div style="margin-bottom:10px">
+                      <label>ФИО получателя *</label>
+                      <input value="${esc(ui.wizRecipient)}" oninput="AppAPI.setWizRec(this.value)" placeholder="Введите или выберите ФИО..." />
+                      <div style="margin-top:6px">
+                        ${state.people.map(p => `<span class="pill" onclick="AppAPI.setWizRec('${esc(p.fio)}')">${esc(p.fio)}</span>`).join("")}
+                      </div>
+                    </div>
+                    <div style="margin-bottom:12px">
+                      <label>Комментарий</label>
+                      <input value="${esc(ui.wizComment)}" oninput="AppAPI.setWizComment(this.value)" placeholder="Необязательно..." />
+                    </div>
+                    <div style="display:flex;justify-content:space-between">
+                      <button class="btn" onclick="AppAPI.setWizStep(2)">← Назад</button>
+                      <button class="btn btn-green" onclick="AppAPI.finishIssue()">Провести выдачу</button>
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // МОДАЛЬНОЕ ОКНО: РЕГИСТРАЦИЯ И QR-ВХОД
+        if (ui.modal === "auth") {
+          html += `
+            <div class="modal-bg">
+              <div class="modal">
+                <div class="modal-head">
+                  <strong>Аккаунты и вход по QR-коду</strong>
+                  <button class="btn btn-dark" onclick="AppAPI.closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                  <div style="display:flex;gap:6px;margin-bottom:10px">
+                    <button class="btn ${ui.authTab === "login" ? "btn-amber" : ""}" onclick="AppAPI.setAuthTab('login')">Вход по QR</button>
+                    <button class="btn ${ui.authTab === "reg" ? "btn-amber" : ""}" onclick="AppAPI.setAuthTab('reg')">Регистрация</button>
+                    <button class="btn ${ui.authTab === "qrs" ? "btn-amber" : ""}" onclick="AppAPI.setAuthTab('qrs')">QR аккаунтов</button>
+                  </div>
+                  ${ui.camActive ? `<video id="camVideo" playsinline muted style="width:100%;max-height:160px;background:#000;margin-bottom:8px"></video>` : ""}
+                  ${ui.authTab === "login" ? `
+                    <div style="display:flex;gap:6px;margin-bottom:10px">
+                      <input id="qrAuthInp" placeholder="Код QR или ФИО..." />
+                      <button class="btn btn-blue" onclick="AppAPI.startCam('auth')">Камера QR</button>
+                      <button class="btn btn-green" onclick="AppAPI.loginManual()">Войти</button>
+                    </div>
+                    ${state.accounts.map(a => `
+                      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ccc;padding:6px 8px;margin-bottom:6px">
+                        <div><strong>${esc(a.fio)}</strong><div style="font-size:11px;color:#555">${esc(a.role)} • ${esc(a.qrToken)}</div></div>
+                        <button class="btn btn-dark" onclick="AppAPI.loginAcc('${esc(a.id)}')">Войти</button>
+                      </div>
+                    `).join("")}
+                  ` : ""}
+                  ${ui.authTab === "reg" ? `
+                    <div style="margin-bottom:8px"><label>ФИО сотрудника</label><input id="regFioInp" placeholder="Введите ФИО..." /></div>
+                    <div style="margin-bottom:10px"><label>Должность</label><input id="regRoleInp" value="Кладовщик" /></div>
+                    <button class="btn btn-green" style="width:100%" onclick="AppAPI.registerAcc()">Зарегистрировать аккаунт</button>
+                  ` : ""}
+                  ${ui.authTab === "qrs" ? `
+                    ${state.accounts.map(a => `
+                      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ccc;padding:8px;margin-bottom:8px">
+                        <div><strong>${esc(a.fio)}</strong><div style="font-size:11px">${esc(a.role)}</div></div>
+                        ${qrSVG(a.qrToken, 84)}
+                      </div>
+                    `).join("")}
+                  ` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // МОДАЛЬНОЕ ОКНО: БАЗА ДАННЫХ (МОДЕЛИ, НОМЕНКЛАТУРА, ЛЮДИ)
+        if (ui.modal === "db") {
+          const dbModel = state.models.find(m => m.id === ui.dbModelId) || state.models[0];
+          html += `
+            <div class="modal-bg">
+              <div class="modal">
+                <div class="modal-head">
+                  <strong>База данных (Добавление / Изменение / Удаление)</strong>
+                  <button class="btn btn-dark" onclick="AppAPI.closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+                    <button class="btn ${ui.dbTab === "models" ? "btn-amber" : ""}" onclick="AppAPI.setDbTab('models')">Модели автобуса</button>
+                    <button class="btn ${ui.dbTab === "items" ? "btn-amber" : ""}" onclick="AppAPI.setDbTab('items')">Номенклатура</button>
+                    <button class="btn ${ui.dbTab === "people" ? "btn-amber" : ""}" onclick="AppAPI.setDbTab('people')">Люди (получатели)</button>
+                  </div>
+
+                  ${ui.dbTab === "models" ? `
+                    <div style="display:flex;gap:6px;margin-bottom:10px">
+                      <input id="dbModelNameInp" placeholder="Название модели автобуса..." />
+                      <button class="btn btn-green" onclick="AppAPI.addModel()">Добавить</button>
+                    </div>
+                    ${state.models.map(m => `
+                      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ccc;padding:6px 8px;margin-bottom:6px;font-size:12px">
+                        <div><strong>${esc(m.name)}</strong><div style="font-size:11px;color:#555">${esc(m.qrCode)}</div></div>
+                        <div style="display:flex;gap:4px">
+                          <button class="btn" onclick="AppAPI.renameModel('${esc(m.id)}')">Изм.</button>
+                          <button class="btn btn-red" onclick="AppAPI.delModel('${esc(m.id)}')">Удал.</button>
+                        </div>
+                      </div>
+                    `).join("")}
+                  ` : ""}
+
+                  ${ui.dbTab === "items" ? `
+                    <select style="margin-bottom:8px" onchange="AppAPI.setDbModel(this.value)">
+                      ${state.models.map(m => `<option value="${esc(m.id)}" ${m.id === dbModel.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}
+                    </select>
+                    <div class="grid-3" style="margin-bottom:8px">
+                      <input id="dbItemName" placeholder="Наименование..." />
+                      <input id="dbItemApp" type="number" min="1" value="1" placeholder="Примен." />
+                      <button class="btn btn-green" onclick="AppAPI.addItem()">Добавить ТМЦ</button>
+                    </div>
+                    ${dbModel.bom.map(b => `
+                      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ccc;padding:6px 8px;margin-bottom:6px;font-size:12px">
+                        <div><strong>${esc(b.name)}</strong> (${b.applicability} ${esc(b.unit)})</div>
+                        <div style="display:flex;gap:4px">
+                          <button class="btn" onclick="AppAPI.editItem('${esc(dbModel.id)}','${esc(b.id)}')">Изм.</button>
+                          <button class="btn btn-red" onclick="AppAPI.delItem('${esc(dbModel.id)}','${esc(b.id)}')">Удал.</button>
+                        </div>
+                      </div>
+                    `).join("")}
+                  ` : ""}
+
+                  ${ui.dbTab === "people" ? `
+                    <div class="grid-3" style="margin-bottom:8px">
+                      <input id="dbPersonFio" placeholder="ФИО работника..." />
+                      <input id="dbPersonDep" placeholder="Цех / участок..." />
+                      <button class="btn btn-green" onclick="AppAPI.addPerson()">Добавить</button>
+                    </div>
+                    ${state.people.map(p => `
+                      <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #ccc;padding:6px 8px;margin-bottom:6px;font-size:12px">
+                        <div><strong>${esc(p.fio)}</strong><div style="font-size:11px;color:#555">${esc(p.department)}</div></div>
+                        <div style="display:flex;gap:4px">
+                          <button class="btn" onclick="AppAPI.editPerson('${esc(p.id)}')">Изм.</button>
+                          <button class="btn btn-red" onclick="AppAPI.delPerson('${esc(p.id)}')">Удал.</button>
+                        </div>
+                      </div>
+                    `).join("")}
+                  ` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // МОДАЛЬНОЕ ОКНО: ЗАГРУЗКА СОСТАВА В МОДЕЛЬ
+        if (ui.modal === "import") {
+          html += `
+            <div class="modal-bg">
+              <div class="modal">
+                <div class="modal-head">
+                  <strong>Загрузка состава в модель автобуса</strong>
+                  <button class="btn btn-dark" onclick="AppAPI.closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                  <p class="sub" style="margin-bottom:6px">Формат: Наименование | Ед.изм | Применяемость</p>
+                  <textarea id="impText" rows="5">Клапан ТРВ климатической установки | шт | 2&#10;Фильтр-осушитель магистрали | шт | 1</textarea>
+                  <div style="margin:8px 0">
+                    <label>Модель автобуса:</label>
+                    <select id="impModel">
+                      ${state.models.map(m => `<option value="${esc(m.id)}" ${m.id === activeModel.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}
+                    </select>
+                  </div>
+                  <button class="btn btn-blue" style="width:100%" onclick="AppAPI.runImport()">Загрузить состав</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // МОДАЛЬНОЕ ОКНО: ПРОСМОТР QR
+        if (ui.modal === "qr" && ui.qrData) {
+          html += `
+            <div class="modal-bg" onclick="AppAPI.closeModal()">
+              <div class="modal" style="max-width:320px;text-align:center" onclick="event.stopPropagation()">
+                <div class="modal-head">
+                  <strong>${esc(ui.qrData.title)}</strong>
+                  <button class="btn btn-dark" onclick="AppAPI.closeModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                  <div style="font-weight:700;margin-bottom:10px">${esc(ui.qrData.sub)}</div>
+                  ${qrSVG(ui.qrData.code, 150)}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById("app").innerHTML = html;
+      }
+
+      window.AppAPI = {
+        setTab(t) { state.tab = t; save(); },
+        selectModel(id) { ui.selectedModelId = id; render(); },
+        setSearch(v) { ui.issueSearch = v; render(); },
+        setRepModel(v) { ui.reportModelId = v; render(); },
+        setRepBody(v) { ui.reportBody = v; render(); },
+        setRepFilter(v) { ui.reportFilter = v; render(); },
+        closeModal() { stopCam(); ui.modal = null; render(); },
+        openWizard() {
+          const m = state.models.find(x => x.id === ui.selectedModelId) || state.models[0];
+          ui.modal = "wizard"; ui.wizStep = 1; ui.wizModelId = m.id; ui.wizModelText = m.name;
+          ui.wizBody = ""; ui.wizItemId = ""; ui.wizSerial = ""; ui.wizQty = 1; ui.wizDraft = []; ui.wizRecipient = "";
+          render();
+        },
+        openAuth() { ui.modal = "auth"; ui.authTab = "login"; render(); },
+        setAuthTab(t) { stopCam(); ui.authTab = t; render(); },
+        loginAcc(id) { state.activeAccountId = id; ui.modal = null; notify("Вход выполнен"); save(); },
+        loginManual() {
+          const v = (document.getElementById("qrAuthInp")?.value || "").trim().toLowerCase();
+          const acc = state.accounts.find(a => a.qrToken.toLowerCase() === v || a.fio.toLowerCase().includes(v));
+          if (acc) { state.activeAccountId = acc.id; ui.modal = null; notify("Вход: " + acc.fio); save(); }
+          else notify("Аккаунт не найден");
+        },
+        registerAcc() {
+          const fio = (document.getElementById("regFioInp")?.value || "").trim();
+          const role = (document.getElementById("regRoleInp")?.value || "Кладовщик").trim();
+          if (!fio) return notify("Введите ФИО");
+          const id = "acc-" + Date.now();
+          state.accounts.push({ id, fio, role, qrToken: "QR-USER-" + Math.floor(1000 + Math.random() * 9000) });
+          state.activeAccountId = id;
+          ui.authTab = "qrs";
+          notify("Аккаунт зарегистрирован");
+          save();
+        },
+        openDb() { ui.modal = "db"; render(); },
+        setDbTab(t) { ui.dbTab = t; render(); },
+        setDbModel(id) { ui.dbModelId = id; render(); },
+        addModel() {
+          const name = (document.getElementById("dbModelNameInp")?.value || "").trim();
+          if (!name) return notify("Введите название модели");
+          const id = "NEFAZ-" + Math.floor(1000 + Math.random() * 9000);
+          state.models.push({ id, name, qrCode: "QR-MODEL-" + id, bom: [] });
+          ui.dbModelId = id;
+          notify("Модель добавлена");
+          save();
+        },
+        renameModel(id) {
+          const m = state.models.find(x => x.id === id);
+          if (!m) return;
+          const next = prompt("Новое название модели:", m.name);
+          if (next && next.trim()) { m.name = next.trim(); notify("Модель изменена"); save(); }
+        },
+        delModel(id) {
+          if (state.models.length <= 1) return notify("Нельзя удалить последнюю модель");
+          state.models = state.models.filter(m => m.id !== id);
+          ui.selectedModelId = state.models[0].id;
+          ui.dbModelId = state.models[0].id;
+          notify("Модель удалена");
+          save();
+        },
+        addItem() {
+          const name = (document.getElementById("dbItemName")?.value || "").trim();
+          const app = Math.max(1, parseInt(document.getElementById("dbItemApp")?.value, 10) || 1);
+          if (!name) return notify("Введите наименование");
+          const m = state.models.find(x => x.id === ui.dbModelId) || state.models[0];
+          m.bom.push({ id: "b-" + Date.now(), name, unit: "шт", applicability: app, barcode: genBarcode(name + Date.now()) });
+          notify("Номенклатура добавлена");
+          save();
+        },
+        editItem(mId, bId) {
+          const m = state.models.find(x => x.id === mId);
+          const b = m && m.bom.find(x => x.id === bId);
+          if (!b) return;
+          const n = prompt("Наименование:", b.name);
+          if (n && n.trim()) b.name = n.trim();
+          const a = prompt("Применяемость:", b.applicability);
+          if (a && parseInt(a, 10) > 0) b.applicability = parseInt(a, 10);
+          notify("Номенклатура обновлена");
+          save();
+        },
+        delItem(mId, bId) {
+          const m = state.models.find(x => x.id === mId);
+          if (m) m.bom = m.bom.filter(x => x.id !== bId);
+          notify("Номенклатура удалена");
+          save();
+        },
+        addPerson() {
+          const fio = (document.getElementById("dbPersonFio")?.value || "").trim();
+          const department = (document.getElementById("dbPersonDep")?.value || "Цех").trim();
+          if (!fio) return notify("Введите ФИО");
+          state.people.push({ id: "p-" + Date.now(), fio, department });
+          notify("Сотрудник добавлен");
+          save();
+        },
+        editPerson(id) {
+          const p = state.people.find(x => x.id === id);
+          if (!p) return;
+          const f = prompt("ФИО:", p.fio);
+          if (f && f.trim()) p.fio = f.trim();
+          const d = prompt("Подразделение:", p.department);
+          if (d && d.trim()) p.department = d.trim();
+          notify("Данные обновлены");
+          save();
+        },
+        delPerson(id) {
+          state.people = state.people.filter(x => x.id !== id);
+          notify("Сотрудник удалён");
+          save();
+        },
+        openImport() { ui.modal = "import"; render(); },
+        runImport() {
+          const txt = document.getElementById("impText")?.value || "";
+          const mId = document.getElementById("impModel")?.value;
+          const m = state.models.find(x => x.id === mId);
+          if (!m) return;
+          txt.split("\n").map(l => l.trim()).filter(Boolean).forEach((line, idx) => {
+            const p = line.split("|").map(s => s.trim());
+            m.bom.push({
+              id: "imp-" + Date.now() + "-" + idx,
+              name: p[0] || "Деталь",
+              unit: p[1] || "шт",
+              applicability: Math.max(1, parseInt(p[2], 10) || 1),
+              barcode: genBarcode(p[0] + idx)
+            });
+          });
+          ui.modal = null;
+          notify("Состав загружен");
+          save();
+        },
+        showQr(title, sub, code) { ui.modal = "qr"; ui.qrData = { title, sub, code }; render(); },
+        startCam, stopCam,
+        setWizModelText(v) { ui.wizModelText = v; },
+        pickWizModel(id) {
+          const m = state.models.find(x => x.id === id);
+          if (m) { ui.wizModelId = m.id; ui.wizModelText = m.name; render(); }
+        },
+        setWizBody(v) { ui.wizBody = v; },
+        setWizStep(s) { stopCam(); ui.wizStep = s; render(); },
+        goStep2() {
+          if (!ui.wizBody.trim()) return notify("Введите номер кузова");
+          stopCam(); ui.wizStep = 2; render();
+        },
+        lookupItem(v) {
+          const q = v.trim().toLowerCase();
+          if (!q) return;
+          const m = state.models.find(x => x.id === ui.wizModelId) || state.models[0];
+          const it = m.bom.find(b => b.barcode.toLowerCase() === q || b.name.toLowerCase().includes(q));
+          if (it) {
+            ui.wizItemId = it.id;
+            const rem = Math.max(0, it.applicability - getIssuedQty(ui.wizBody, it.id, it.name));
+            ui.wizQty = rem > 0 ? 1 : 0;
+            render();
+          }
+        },
+        pickWizItem(id) {
+          ui.wizItemId = id;
+          const m = state.models.find(x => x.id === ui.wizModelId) || state.models[0];
+          const it = m.bom.find(b => b.id === id);
+          if (it) {
+            const rem = Math.max(0, it.applicability - getIssuedQty(ui.wizBody, it.id, it.name));
+            ui.wizQty = rem > 0 ? 1 : 0;
+          }
+          render();
+        },
+        setWizSerial(v) { ui.wizSerial = v; },
+        setWizQty(v) { ui.wizQty = parseInt(v, 10) || 1; },
+        addDraft() {
+          const m = state.models.find(x => x.id === ui.wizModelId) || state.models[0];
+          const it = m.bom.find(b => b.id === ui.wizItemId);
+          if (!it) return;
+          const rem = Math.max(0, it.applicability - getIssuedQty(ui.wizBody, it.id, it.name));
+          const qty = Math.min(rem, Math.max(1, Number(ui.wizQty) || 1));
+          if (qty <= 0) return notify("Лимит по применяемости исчерпан");
+          ui.wizDraft.push({ itemId: it.id, name: it.name, unit: it.unit, qty, serialNumber: ui.wizSerial.trim() });
+          ui.wizItemId = ""; ui.wizSerial = ""; ui.wizQty = 1;
+          notify("Добавлено — можно выбрать следующую позицию");
+          render();
+        },
+        goStep3() {
+          if (ui.wizDraft.length === 0) return notify("Добавьте хотя бы одну позицию");
+          stopCam(); ui.wizStep = 3; render();
+        },
+        setWizRec(v) { ui.wizRecipient = v; render(); },
+        setWizComment(v) { ui.wizComment = v; },
+        finishIssue() {
+          if (!ui.wizRecipient.trim()) return notify("Укажите ФИО получателя");
+          const now = new Date();
+          const p = n => String(n).padStart(2, "0");
+          const dt = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}`;
+          const doc = "ВД-" + String(101 + state.issues.length).padStart(6, "0");
+          const acc = getActiveAcc();
+          state.issues.unshift({
+            id: "iss-" + Date.now(),
+            docNumber: doc,
+            dateTime: dt,
+            modelId: ui.wizModelId,
+            bodyNumber: ui.wizBody.trim().toUpperCase(),
+            recipient: ui.wizRecipient.trim(),
+            issuer: acc ? acc.fio : "Кладовщик",
+            comment: ui.wizComment.trim(),
+            items: ui.wizDraft
+          });
+          ui.modal = null;
+          notify("Проведен документ " + doc);
+          save();
+        }
+      };
+
+      render();
+    })();
+  </script>
 </body>
 </html>
